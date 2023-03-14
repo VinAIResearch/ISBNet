@@ -9,7 +9,7 @@
 # ISBNet: a 3D Point Cloud Instance Segmentation Network with Instance-aware Sampling and Box-aware Dynamic Convolution
 > **Abstract**: 
 Existing 3D instance segmentation methods are predominant by a bottom-up design: a manually fine-tuned algorithm to group points into clusters followed by a refinement network. Relying on the quality of the clusters, these methods generate susceptible results when (1) nearby objects with the same semantic class are packed together, or (2) large objects with complex shapes. To address these shortcomings, we introduce ISBNet, a novel cluster-free method that represents instances as kernels and decodes instance masks via dynamic convolution. To efficiently generate a high-recall and discriminative kernel set, we propose a simple strategy, named Instance-aware Farthest Point Sampling, to sample candidates and leverage the point aggregation layer adopted from PointNet++ to encode candidate features. Moreover, we show that training 3D instance segmentation in a multi-task learning setting with an additional axis-aligned bounding box prediction head further boosts performance. Our method set new state-of-the-art results on ScanNetV2 (55.9), S3DIS (60.8), and STPLS3D (49.2) in terms of AP and retains fast inference time (237ms per scene on ScanNetV2).
-![overview](figs/arch.png)
+![overview](docs/isbnet_arch.png)
 
 Details of the method and experimental results can be found in [our paper](https://arxiv.org/abs/2303.00246v1):
 
@@ -59,12 +59,10 @@ python3 tools/test.py configs/scannetv2/isbnet_scannetv2.yaml pretrains/scannetv
 
 ```
 python3 tools/test.py configs/s3dis/isbnet_s3dis_area5.yaml pretrains/s3dis/best_head_val_area5.pth
-
 ```
 
-
 ## Acknowledgements
-This repo is built upon [DyCo3D](https://github.com/aim-uofa/DyCo3D), [spconv](https://github.com/traveller59/spconv), [SoftGroup](https://github.com/thangvubk/SoftGroup). 
+This repo is built upon [spconv](https://github.com/traveller59/spconv), [DyCo3D](https://github.com/aim-uofa/DyCo3D), [SoftGroup](https://github.com/thangvubk/SoftGroup). 
 
 ## Contacts
 If you have any questions or suggestions about this repo, please feel free to contact me (ductuan.ngo99@gmail.com).
