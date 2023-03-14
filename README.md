@@ -22,7 +22,7 @@ Existing 3D instance segmentation methods are predominant by a bottom-up design:
 Details of the model architecture and experimental results can be found in [our paper](https://arxiv.org/abs/2303.00246v1):
 
 ```bibtext
-@inproceedings{ngo2022geoformer,
+@inproceedings{ngo2023isbnet,
  author={Tuan Duc Ngo, Binh-Son Hua, Khoi Nguyen},
  booktitle={Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
  title={ISBNet: a 3D Point Cloud Instance Segmentation Network with Instance-aware Sampling and Box-aware Dynamic Convolution},
