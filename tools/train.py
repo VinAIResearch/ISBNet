@@ -124,7 +124,7 @@ def validate(epoch, model, optimizer, val_loader, cfg, logger, writer):
         for i, batch in enumerate(val_loader):
             
             # NOTE Skip large scene of s3dis during traing to avoid oom
-            if cfg.data.train.type == 's3dis' and batch['coords_float'].shape > 3000000:
+            if cfg.data.train.type == 's3dis' and batch['coords_float'].shape[0] > 3000000:
                 continue
 
             with torch.cuda.amp.autocast(enabled=cfg.fp16):
