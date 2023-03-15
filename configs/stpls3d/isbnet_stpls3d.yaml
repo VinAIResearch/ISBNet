@@ -86,7 +86,7 @@ fp16: True
 epochs: 120
 step_epoch: 50
 save_freq: 4
-pretrain: 'pretrains/scannetv2/best_pretrain.pth'
+pretrain: 'pretrains/stpls3d/best_pretrain.pth'
 work_dir: ''
 
 # best weight: pretrains/best_baseline.pth

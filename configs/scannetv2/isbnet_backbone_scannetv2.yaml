@@ -1,16 +1,16 @@
 model:
   channels: 32
   num_blocks: 7
-  semantic_classes: 13
-  instance_classes: 11
-  sem2ins_classes: [0,1]
+  semantic_classes: 20
+  instance_classes: 18
+  sem2ins_classes: []
   semantic_only: False
   semantic_weight: False
   with_coords: True
   ignore_label: -100
   voxel_scale: 50
   use_spp_pool: True
-  filter_bg_thresh: 0.4
+  filter_bg_thresh: 0.1
   instance_head_cfg:
     dec_dim: 128
     n_sample_pa1: 2048
@@ -25,32 +25,32 @@ model:
     focal_loss: False
     dice_loss: False
   test_cfg:
-    x4_split: True
+    x4_split: False
     sem_inst_cls_thresh: 0.2
     logit_thresh: 0.0
-    score_thresh: 0.6
-    npoint_thresh: 400
-    topk: -1
+    score_thresh: 0.2
+    npoint_thresh: 100
+    topk: 100
 
-  fixed_modules: ['input_conv', 'unet', 'output_layer', 'semantic_linear', 'offset_linear', 'offset_vertices_linear', 'box_conf_linear']
+  fixed_modules: []
 
 data:
   train:
-    type: 's3dis'
-    data_root: 'dataset/s3dis/'
-    prefix: ['Area_1', 'Area_2', 'Area_3', 'Area_4', 'Area_6']
+    type: 'scannetv2'
+    data_root: 'dataset/scannetv2'
+    prefix: 'train'
     suffix: '_inst_nostuff.pth'
-    repeat: 20
     training: True
+    repeat: 4
     voxel_cfg:
       scale: 50
       spatial_shape: [128, 512]
       max_npoint: 250000
       min_npoint: 5000
   test:
-    type: 's3dis'
-    data_root: 'dataset/s3dis/'
-    prefix: 'Area_5'
+    type: 'scannetv2'
+    data_root: 'dataset/scannetv2'
+    prefix: 'val'
     suffix: '_inst_nostuff.pth'
     training: False
     voxel_cfg:
@@ -62,15 +62,15 @@ data:
 
 dataloader:
   train:
-    batch_size: 12
-    num_workers: 12
+    batch_size: 16
+    num_workers: 16
   test:
     batch_size: 1
     num_workers: 1
 
 optimizer:
   type: 'AdamW'
-  lr: 0.001
+  lr: 0.004
   weight_decay: 0.0001
 
 save_cfg:
@@ -81,11 +81,9 @@ save_cfg:
   nmc_clusters: False
   object_conditions: False
 
-fp16: False
-epochs: 80
-step_epoch: 30
+fp16: True
+epochs: 100
+step_epoch: 40
 save_freq: 4
-pretrain: 'pretrains/s3dis/best_pretrain_val_area5.pth'
+pretrain: ''
 work_dir: ''
-
-# best weight: pretrains/best_baseline.pth

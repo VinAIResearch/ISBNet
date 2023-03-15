@@ -4,11 +4,13 @@
 
 1\) Training ScanNetV2 dataset
 
-Pretrain the 3D Unet backbone
+Pretrain the 3D Unet backbone from scratch
 
 ```
-python3 tools/train.py configs/scannetv2/isbnet_scannetv2.yaml --only_backbone --exp_name pretrain_backbone
+python3 tools/train.py configs/scannetv2/isbnet_backbone_scannetv2.yaml --only_backbone --exp_name pretrain_backbone
 ```
+
+We also provided the pre-trained 3D backbone models of ScanNetV2 ([GoogleDrive](https://drive.google.com/file/d/1DQiMOsZpr9PgaKx9aK8rJhhIvh0vodWd/view?usp=sharing)) and S3DIS ([GoogleDrive](https://drive.google.com/file/d/1SHqrtrb94HQMa4Ml6X6_4JHZbRDqlTEv/view?usp=sharing)). This model achieves ~70.8 mIoU on ScanNet validation set and ~69.0 mIoU on S3DIS Area5 validation. Additionally, we can also finetune other backbones from [SoftGroup](https://github.com/thangvubk/SoftGroup) or [SSTNet](https://github.com/Gorilla-Lab-SCUT/SSTNet) with fewer epoches by set the pretrain path in the config file to the corresponding pre-trained weights.
 
 Train our ISBNet:
 
