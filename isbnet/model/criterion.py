@@ -105,15 +105,12 @@ class Criterion(nn.Module):
         self.trainall = trainall
 
         empty_weight = torch.ones(self.instance_classes + 1)
-        # empty_weight[-1] = 0.5
         empty_weight[-1] = self.eos_coef
         if self.semantic_weight:
             for i in range(self.label_shift, self.instance_classes + self.label_shift):
                 empty_weight[i - self.label_shift] = self.semantic_weight[i]
 
         self.register_buffer("empty_weight", empty_weight)
-
-        # print(empty_weight)
 
         # self.loss_weight = {
         #     "dice_loss": 4,
@@ -127,7 +124,6 @@ class Criterion(nn.Module):
 
         self.loss_weight = {
             "dice_loss": 1,
-            # "focal_loss": 4,
             "bce_loss": 1,
             "cls_loss": 0.5,
             "iou_loss": 0.5,
@@ -184,8 +180,8 @@ class Criterion(nn.Module):
             iou_gt = iou_gt.detach()
             conf_loss = F.mse_loss(box_conf[pos_inds], iou_gt, reduction="sum") / total_pos_inds
 
-        losses["pw_center_loss"] = offset_loss
-        losses["pw_corners_loss"] = offset_vertices_loss
+        losses["pw_center_loss"] = offset_loss * self.voxel_scale / 50.0
+        losses["pw_corners_loss"] = offset_vertices_loss * self.voxel_scale / 50.0
         losses["pw_giou_loss"] = giou_loss
         losses["pw_conf_loss"] = conf_loss
 
@@ -197,20 +193,16 @@ class Criterion(nn.Module):
         mask_logits_list,
         conf_logits,
         box_preds,
-        # inside_masks,
         row_indices,
         cls_labels,
         inst_labels,
         box_labels,
         batch_size,
     ):
-        # loss = torch.tensor(0.0, requires_grad=True, device=cls_logits.device, dtype=torch.float)
-        # loss = 0.0
         loss_dict = {}
 
         for k in self.loss_weight:
             loss_dict[k] = torch.tensor(0.0, requires_grad=True, device=cls_logits.device, dtype=torch.float)
-            # loss_dict[k] = 0
 
         num_gt = 0
         for b in range(batch_size):
@@ -218,7 +210,6 @@ class Criterion(nn.Module):
             cls_logit_b = cls_logits[b]  # n_queries x n_classes
             conf_logits_b = conf_logits[b]  # n_queries
             box_preds_b = box_preds[b]
-            # inside_masks_b = inside_masks[b]
 
             pred_inds, cls_label, inst_label, box_label = row_indices[b], cls_labels[b], inst_labels[b], box_labels[b]
 
@@ -234,8 +225,6 @@ class Criterion(nn.Module):
             conf_logits_pred = conf_logits_b[pred_inds]
             box_pred = box_preds_b[pred_inds]
 
-            # inside_masks_b_pred = inside_masks_b[pred_inds]
-
             num_gt_batch = len(pred_inds)
             num_gt += num_gt_batch
 
@@ -243,18 +232,9 @@ class Criterion(nn.Module):
                 mask_logit_pred, inst_label, num_gt_batch
             )
 
-            # breakpoint()
-            # loss_dict["focal_loss"] = loss_dict["focal_loss"] + compute_sigmoid_focal_loss(
-            #     mask_logit_pred, inst_label, num_gt_batch,
-            # )
             bce_loss = F.binary_cross_entropy_with_logits(mask_logit_pred, inst_label, reduction="none")
             bce_loss = bce_loss.mean(1).sum() / (num_gt_batch + 1e-6)
             loss_dict["bce_loss"] = loss_dict["bce_loss"] + bce_loss
-
-            # if torch.any(torch.isnan(bce_loss)):
-            #     breakpoint()
-
-            # loss_dict["focal_loss"] = loss_dict["focal_loss"] + F.binary_cross_entropy_with_logits(mask_logit_pred, inst_label, reduction="mean")
 
             gt_iou = get_iou(mask_logit_pred, inst_label)
 
@@ -275,27 +255,21 @@ class Criterion(nn.Module):
                 reduction="mean",
             )
 
-            # print('pt_offsets_vertices', pt_offsets_vertices.shape)
             loss_dict["box_loss"] = (
                 loss_dict["box_loss"]
-                + (self.voxel_scale / 50) * F.l1_loss(box_pred, box_label, reduction="sum") / num_gt_batch
+                + (self.voxel_scale / 50.0) * F.l1_loss(box_pred, box_label, reduction="sum") / num_gt_batch
             )
 
-            # iou_gt = iou_aabb(pt_offsets_vertices[pos_inds], pt_offset_vertices_labels[pos_inds], coords_float[pos_inds])
             iou_gt, giou = giou_aabb(box_pred, box_label, coords=None)
 
             loss_dict["giou_loss"] = loss_dict["giou_loss"] + torch.sum(1 - giou) / num_gt_batch
-
-            # breakpoint()
-
-        # print('loss', num_gt)
 
         for k in loss_dict.keys():
             loss_dict[k] = loss_dict[k] / batch_size
 
         return loss_dict
 
-    def forward(self, batch_inputs, model_outputs, epoch=0):
+    def forward(self, batch_inputs, model_outputs):
         loss_dict = {}
 
         semantic_labels = batch_inputs["semantic_labels"]
@@ -354,7 +328,6 @@ class Criterion(nn.Module):
 
         dc_inst_mask_arr = model_outputs["dc_inst_mask_arr"]
 
-        # n_layers = len(cls_logits_layers)
         batch_size, n_queries = cls_logits.shape[:2]
 
         gt_dict, aux_gt_dict = self.matcher.forward_dup(
@@ -407,7 +380,6 @@ class Criterion(nn.Module):
             batch_size,
         )
 
-        # coef_aux = math.exp((1 - 5 * epoch/self.total_epoch))
         coef_aux = 2.0
         for k, v in self.loss_weight.items():
             loss_dict["aux_" + k] = loss_dict["aux_" + k] + aux_main_loss_dict[k] * v * coef_aux

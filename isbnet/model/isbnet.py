@@ -6,20 +6,17 @@ import torch.nn.functional as F
 
 import functools
 import math
-import torch_scatter
-from torch_scatter import scatter_mean
 from ..ops import voxelization
-from ..util import cuda_cast, force_fp32, rle_encode_gpu, rle_encode_gpu_batch
+from ..util import cuda_cast, rle_encode_gpu, rle_encode_gpu_batch
 from .aggregator import LocalAggregator
 from .blocks import MLP, GenericMLP, ResidualBlock, UBlock, conv_with_kaiming_uniform
 from .model_utils import (
+    custom_scatter_mean,
     get_batch_offsets,
     get_cropped_instance_label,
     get_instance_info,
     get_spp_gt,
-    get_subsample_gt,
     matrix_nms,
-    random_downsample,
     superpoint_align,
 )
 
@@ -295,7 +292,9 @@ class ISBNet(nn.Module):
 
         # NOTE Point Aggregator
         voxel_semantic_scores_sm = F.softmax(voxel_semantic_scores, dim=1)
-        spp_semantic_scores_sm = scatter_mean(voxel_semantic_scores_sm, voxel_spps, dim=0)
+        spp_semantic_scores_sm = custom_scatter_mean(
+            voxel_semantic_scores_sm, voxel_spps, dim=0, pool=self.use_spp_pool
+        )
         spp_object_conditions = torch.any(
             spp_semantic_scores_sm[:, self.label_shift :] >= self.filter_bg_thresh, dim=-1
         )
@@ -327,28 +326,43 @@ class ISBNet(nn.Module):
         )
         # -------------------------------
 
-        # NOTE Dynamic conv
-        if self.use_spp_pool:
-            voxel_spps = torch.unique(voxel_spps, return_inverse=True)[1]
-            dc_coords_float, dc_box_preds, dc_output_feats, dc_batch_offsets = self.spp_pool(
-                voxel_coords_float, voxel_output_feats, voxel_box_preds, voxel_spps, voxel_batch_offsets
-            )
+        voxel_spps = torch.unique(voxel_spps, return_inverse=True)[1]
+        dc_coords_float, dc_box_preds, dc_output_feats, dc_batch_offsets = self.spp_pool(
+            voxel_coords_float, voxel_output_feats, voxel_box_preds, voxel_spps, voxel_batch_offsets
+        )
 
-            # NOTE Get GT and loss
-            dc_inst_mask_arr = get_spp_gt(
-                voxel_instance_labels, voxel_spps, instance_cls, instance_box, voxel_batch_offsets, batch_size
-            )
-        else:
-            idxs_subsample = random_downsample(voxel_batch_offsets_, batch_size, n_subsample=30000)
-            dc_coords_float = voxel_coords_float_[idxs_subsample]
-            dc_box_preds = voxel_box_preds_[idxs_subsample]
-            dc_output_feats = voxel_output_feats_[idxs_subsample]
-            dc_batch_offsets = get_batch_offsets(voxel_batch_idxs_[idxs_subsample], batch_size)
+        # NOTE Get GT and loss
+        dc_inst_mask_arr = get_spp_gt(
+            voxel_instance_labels,
+            voxel_spps,
+            instance_cls,
+            instance_box,
+            voxel_batch_offsets,
+            batch_size,
+            pool=self.use_spp_pool,
+        )
+        # # NOTE Dynamic conv
+        # if self.use_spp_pool:
+        #     voxel_spps = torch.unique(voxel_spps, return_inverse=True)[1]
+        #     dc_coords_float, dc_box_preds, dc_output_feats, dc_batch_offsets = self.spp_pool(
+        #         voxel_coords_float, voxel_output_feats, voxel_box_preds, voxel_spps, voxel_batch_offsets
+        #     )
 
-            subsample_idxs = object_idxs[idxs_subsample]
-            dc_inst_mask_arr = get_subsample_gt(
-                voxel_instance_labels, subsample_idxs, instance_cls, instance_box, dc_batch_offsets, batch_size
-            )
+        #     # NOTE Get GT and loss
+        #     dc_inst_mask_arr = get_spp_gt(
+        #         voxel_instance_labels, voxel_spps, instance_cls, instance_box, voxel_batch_offsets, batch_size
+        #     )
+        # else:
+        #     idxs_subsample = random_downsample(voxel_batch_offsets_, batch_size, n_subsample=30000)
+        #     dc_coords_float = voxel_coords_float_[idxs_subsample]
+        #     dc_box_preds = voxel_box_preds_[idxs_subsample]
+        #     dc_output_feats = voxel_output_feats_[idxs_subsample]
+        #     dc_batch_offsets = get_batch_offsets(voxel_batch_idxs_[idxs_subsample], batch_size)
+
+        #     subsample_idxs = object_idxs[idxs_subsample]
+        #     dc_inst_mask_arr = get_subsample_gt(
+        #         voxel_instance_labels, subsample_idxs, instance_cls, instance_box, dc_batch_offsets, batch_size
+        #     )
 
         dc_mask_features = self.mask_tower(torch.unsqueeze(dc_output_feats, dim=2).permute(2, 1, 0)).permute(2, 1, 0)
 
@@ -368,7 +382,7 @@ class ISBNet(nn.Module):
             )
         )
 
-        losses = self.criterion(batch_inputs, model_outputs, epoch=epoch)
+        losses = self.criterion(batch_inputs, model_outputs)
         # -------------------------------
 
         return self.parse_losses(losses)
@@ -404,7 +418,7 @@ class ISBNet(nn.Module):
         assert batch_size == 1
 
         voxel_spps = spps[p2v_map[:, 1].long()]
-        n_voxels = len(voxel_spps)
+        # n_voxels = len(voxel_spps)
 
         ret = dict(
             scan_id=scan_ids[0],
@@ -447,22 +461,31 @@ class ISBNet(nn.Module):
 
             return ret
 
-        with torch.cuda.amp.autocast(enabled=False):
-            spp_semantic_scores_sm = torch_scatter.scatter_mean(
-                voxel_semantic_scores_sm.float(),
-                voxel_spps[:, None].expand(-1, voxel_semantic_scores_sm.shape[-1]),
-                dim=0,
-            )
+        # with torch.cuda.amp.autocast(enabled=False):
+        #     spp_semantic_scores_sm = torch_scatter.scatter_mean(
+        #         voxel_semantic_scores_sm.float(),
+        #         voxel_spps[:, None].expand(-1, voxel_semantic_scores_sm.shape[-1]),
+        #         dim=0,
+        #     )
+        spp_semantic_scores_sm = custom_scatter_mean(
+            voxel_semantic_scores_sm,
+            voxel_spps[:, None].expand(-1, voxel_semantic_scores_sm.shape[-1]),
+            pool=self.use_spp_pool,
+        )
 
-        if self.use_spp_pool:
-            spp_object_conditions = torch.any(
-                spp_semantic_scores_sm[:, self.label_shift :] >= self.filter_bg_thresh, dim=-1
-            )
-            object_conditions = spp_object_conditions[voxel_spps]
-        else:
-            object_conditions = torch.any(
-                voxel_semantic_scores_sm[:, self.label_shift :] >= self.filter_bg_thresh, dim=-1
-            )
+        spp_object_conditions = torch.any(
+            spp_semantic_scores_sm[:, self.label_shift :] >= self.filter_bg_thresh, dim=-1
+        )
+        object_conditions = spp_object_conditions[voxel_spps]
+        # if self.use_spp_pool:
+        #     spp_object_conditions = torch.any(
+        #         spp_semantic_scores_sm[:, self.label_shift :] >= self.filter_bg_thresh, dim=-1
+        #     )
+        #     object_conditions = spp_object_conditions[voxel_spps]
+        # else:
+        #     object_conditions = torch.any(
+        #         voxel_semantic_scores_sm[:, self.label_shift :] >= self.filter_bg_thresh, dim=-1
+        #     )
 
         if object_conditions.sum() == 0:
             ret.update(dict(pred_instances=[]))
@@ -477,17 +500,22 @@ class ISBNet(nn.Module):
         voxel_box_preds_ = voxel_box_preds[object_idxs]
         voxel_batch_offsets_ = get_batch_offsets(voxel_batch_idxs_, batch_size)
 
-        # NOTE Pool feats
-        if self.use_spp_pool:
-            voxel_spps = torch.unique(voxel_spps, return_inverse=True)[1]
-            dc_coords_float, dc_box_preds, dc_output_feats, dc_batch_offsets = self.spp_pool(
-                voxel_coords_float, voxel_output_feats, voxel_box_preds, voxel_spps, voxel_batch_offsets
-            )
-        else:
-            dc_coords_float = voxel_coords_float_
-            dc_box_preds = voxel_box_preds_
-            dc_output_feats = voxel_output_feats_
-            dc_batch_offsets = voxel_batch_offsets_
+        voxel_spps = torch.unique(voxel_spps, return_inverse=True)[1]
+        dc_coords_float, dc_box_preds, dc_output_feats, dc_batch_offsets = self.spp_pool(
+            voxel_coords_float, voxel_output_feats, voxel_box_preds, voxel_spps, voxel_batch_offsets
+        )
+
+        # # NOTE Pool feats
+        # if self.use_spp_pool:
+        #     voxel_spps = torch.unique(voxel_spps, return_inverse=True)[1]
+        #     dc_coords_float, dc_box_preds, dc_output_feats, dc_batch_offsets = self.spp_pool(
+        #         voxel_coords_float, voxel_output_feats, voxel_box_preds, voxel_spps, voxel_batch_offsets
+        #     )
+        # else:
+        #     dc_coords_float = voxel_coords_float_
+        #     dc_box_preds = voxel_box_preds_
+        #     dc_output_feats = voxel_output_feats_
+        #     dc_batch_offsets = voxel_batch_offsets_
 
         dc_mask_features = self.mask_tower(torch.unsqueeze(dc_output_feats, dim=2).permute(2, 1, 0)).permute(2, 1, 0)
         # -------------------------------
@@ -557,15 +585,14 @@ class ISBNet(nn.Module):
 
             cls_logits, mask_logits, conf_logits, box_preds = forward_head_outputs
 
-            mask_logit = mask_logits[:, voxel_spps] if self.use_spp_pool else mask_logits
-
-            if self.use_spp_pool:
-                mask_logit = mask_logits[:, voxel_spps]
-            else:
-                mask_logit = (
-                    torch.zeros((mask_logits.shape[0], n_voxels), dtype=torch.int, device=mask_logits.device) - 1000000
-                )
-                mask_logit[:, object_idxs] = mask_logits
+            mask_logit = mask_logits[:, voxel_spps]
+            # if self.use_spp_pool:
+            #     mask_logit = mask_logits[:, voxel_spps]
+            # else:
+            #     mask_logit = (
+            #         torch.zeros((mask_logits.shape[0], n_voxels), dtype=torch.int, device=mask_logits.device) - 1000000
+            #     )
+            #     mask_logit[:, object_idxs] = mask_logits
 
             cls_logits_final.append(cls_logits)
             mask_logits_final.append(mask_logit)
@@ -615,12 +642,14 @@ class ISBNet(nn.Module):
         ret.update(dict(pred_instances=pred_instances))
         return ret
 
-    def forward_backbone(self, feats, coords_float, voxel_coords, spatial_shape, batch_size, p2v_map, x4_split=False):
+    def forward_backbone(
+        self, input_feats, coords_float, voxel_coords, spatial_shape, batch_size, p2v_map, x4_split=False
+    ):
 
         context = torch.no_grad if self.freeze_backbone else torch.enable_grad
         with context():
             if self.with_coords:
-                input_feats = torch.cat((feats, coords_float), 1)
+                input_feats = torch.cat((input_feats, coords_float), 1)
 
             voxel_input_feats = voxelization(input_feats, p2v_map)
             input = spconv.SparseConvTensor(voxel_input_feats, voxel_coords.int(), spatial_shape, batch_size)
@@ -685,7 +714,7 @@ class ISBNet(nn.Module):
             box_conf = self.box_conf_linear(output_feats).squeeze(-1)
             return semantic_scores, centroid_offset, corners_offset, box_conf
 
-    @force_fp32(apply_to=("voxel_coords_float", "voxel_output_feats", "voxel_box_preds"))
+    # @force_fp32(apply_to=("voxel_coords_float", "voxel_output_feats", "voxel_box_preds"))
     def spp_pool(self, voxel_coords_float, voxel_output_feats, voxel_box_preds, voxel_spps, voxel_batch_offsets):
         spp_batch_offsets = [0]
         for b in range(len(voxel_batch_offsets) - 1):
@@ -695,15 +724,15 @@ class ISBNet(nn.Module):
             spp_batch_offsets.append(spp_batch_offsets[-1] + n_spps_)
         spp_batch_offsets = torch.tensor(spp_batch_offsets, dtype=torch.long, device=voxel_batch_offsets.device)
 
-        spp_coords_float = scatter_mean(voxel_coords_float, voxel_spps, dim=0)
-        spp_box_preds = scatter_mean(voxel_box_preds, voxel_spps, dim=0)
-        spp_output_feats = scatter_mean(voxel_output_feats, voxel_spps, dim=0)
+        spp_coords_float = custom_scatter_mean(voxel_coords_float, voxel_spps, pool=self.use_spp_pool)
+        spp_box_preds = custom_scatter_mean(voxel_box_preds, voxel_spps, pool=self.use_spp_pool)
+        spp_output_feats = custom_scatter_mean(voxel_output_feats, voxel_spps, pool=self.use_spp_pool)
 
         return spp_coords_float, spp_box_preds, spp_output_feats, spp_batch_offsets
 
-    @force_fp32(apply_to=("input_feats"))
-    def scatter_mean_fp32(self, input_feats, indices, dim=0):
-        return scatter_mean(input_feats, indices.long, dim=dim)
+    # @force_fp32(apply_to=("input_feats"))
+    # def scatter_mean_fp32(self, input_feats, indices, dim=0):
+    #     return scatter_mean(input_feats, indices.long, dim=dim)
 
     def forward_head(
         self, queries_features, queries_locs, mask_features_, locs_float_, box_preds_, batch_offsets_, inference=False
@@ -908,26 +937,30 @@ class ISBNet(nn.Module):
             return instances
 
         # NOTE devoxelization
-        proposals_pred = masks_final[:, v2p_map.long()]
+        masks_final = masks_final[:, v2p_map.long()]
 
-        # NOTE superpoint refinement
-        if torch.count_nonzero(spps == self.ignore_label) != spps.shape[0]:
-            proposals_pred = superpoint_align(spps, proposals_pred)
+        # NOTE due to the quantization error, we apply superpoint refinement to the final mask after devoxelization
+        spp_masks_final = custom_scatter_mean(
+            masks_final,
+            spps[None, :].expand(len(masks_final), -1),
+            dim=-1,
+            pool=self.use_spp_pool,
+            output_type=torch.float32,
+        )
+        masks_final = (spp_masks_final >= 0.5)[:, spps]
 
-            valid_proposals_pred_after_spp = torch.sum(proposals_pred, dim=1) >= npoint_thresh
-            proposals_pred = proposals_pred[valid_proposals_pred_after_spp]
-            scores_final = scores_final[valid_proposals_pred_after_spp]
-            cls_final = cls_final[valid_proposals_pred_after_spp]
-            boxes_final = boxes_final[valid_proposals_pred_after_spp]
+        valid_masks_final_after_spp = torch.sum(masks_final, dim=1) >= npoint_thresh
+        masks_final = masks_final[valid_masks_final_after_spp]
+        scores_final = scores_final[valid_masks_final_after_spp]
+        cls_final = cls_final[valid_masks_final_after_spp]
+        boxes_final = boxes_final[valid_masks_final_after_spp]
 
         # NOTE save mask
         scores_final = scores_final.cpu().numpy()
         cls_final = cls_final.cpu().numpy()
         boxes_final = boxes_final.cpu().numpy()
 
-        rle_masks = rle_encode_gpu_batch(proposals_pred)
-
-        del proposals_pred
+        rle_masks = rle_encode_gpu_batch(masks_final)
 
         for i in range(cls_final.shape[0]):
             pred = {}

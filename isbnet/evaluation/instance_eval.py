@@ -448,17 +448,7 @@ class ScanNetEval(object):
         print(line)
         print("#" * lineLen)
 
-        # for (li, label_name) in enumerate(self.eval_class_labels):
-
-        # list_eval_class_labels = tuple(list(self.eval_class_labels))
-        if len(self.eval_class_labels) == 18:  # SCANNET
-            sorted_eval_class_labels = []
-            for idx in [14, 2, 16, 4, 13, 1, 3, 17, 5, 15, 8, 12, 0, 11, 7, 6, 10, 9]:
-                sorted_eval_class_labels.append(self.eval_class_labels[idx])
-        else:
-            sorted_eval_class_labels = self.eval_class_labels
-
-        for (li, label_name) in enumerate(sorted_eval_class_labels):
+        for (li, label_name) in enumerate(self.eval_class_labels):
             ap_avg = avgs["classes"][label_name]["ap"]
             ap_50o = avgs["classes"][label_name]["ap50%"]
             ap_25o = avgs["classes"][label_name]["ap25%"]

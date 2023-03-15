@@ -5,12 +5,11 @@ model:
   instance_classes: 14
   sem2ins_classes: []
   semantic_only: False
-  semantic_weight: [1.0, 1.0, 44.0, 21.9, 1.8, 25.1, 31.5, 21.8, 24.0, 54.4, 114.4,
-                    81.2, 43.6, 9.7, 22.4]
+  semantic_weight: [1.0, 1.0, 44.0, 21.9, 1.8, 25.1, 31.5, 21.8, 24.0, 54.4, 114.4, 81.2, 43.6, 9.7, 22.4]
   with_coords: False
   ignore_label: -100
   voxel_scale: 3
-  use_spp_pool: False
+  use_spp_pool: True
   filter_bg_thresh: 0.1
   instance_head_cfg:
     dec_dim: 128
@@ -63,8 +62,8 @@ data:
 
 dataloader:
   train:
-    batch_size: 16
-    num_workers: 16
+    batch_size: 12
+    num_workers: 12
   test:
     batch_size: 1
     num_workers: 1
@@ -82,11 +81,9 @@ save_cfg:
   nmc_clusters: False
   object_conditions: False
 
-fp16: True
+fp16: False
 epochs: 120
 step_epoch: 50
 save_freq: 4
 pretrain: 'pretrains/stpls3d/best_pretrain.pth'
 work_dir: ''
-
-# best weight: pretrains/best_baseline.pth

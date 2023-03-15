@@ -8,3 +8,7 @@ six
 tensorboard
 tensorboardX
 tqdm
+opencv-python
+numpy
+imageio
+setuptools

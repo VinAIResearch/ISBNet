@@ -108,13 +108,8 @@ def train(epoch, model, optimizer, scheduler, scaler, train_loader, cfg, logger,
 
 def validate(epoch, model, optimizer, val_loader, cfg, logger, writer):
     logger.info("Validation")
-    # results = []
-    # all_sem_preds, all_sem_labels, all_offset_preds, all_offset_labels = [], [], [], []
     all_pred_insts, all_sem_labels, all_ins_labels = [], [], []
-    # coords = []
 
-    # _, world_size = get_dist_info()
-    # progress_bar = tqdm(total=len(val_loader) * world_size, disable=not is_main_process())
     val_set = val_loader.dataset
 
     point_eval = PointWiseEval(num_classes=cfg.model.semantic_classes)
@@ -122,7 +117,7 @@ def validate(epoch, model, optimizer, val_loader, cfg, logger, writer):
 
     torch.cuda.empty_cache()
 
-    # FIXME save tiem, avoid oom, set iterative_sampling = False
+    # FIXME Only during training, to avoid oom, we set iterative_sampling = False
     model.iterative_sampling = False
     with torch.no_grad():
         model.eval()
@@ -281,10 +276,6 @@ def main():
         logger.info(f"Load pretrain from {cfg.pretrain}")
         load_checkpoint(cfg.pretrain, logger, model)
 
-    # if start_epoch > 1:
-    #     scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer, max_lr=0.01, steps_per_epoch=len(train_loader), epochs=cfg.epochs, last_epoch=(start_epoch-1)*len(train_loader))
-    # else:
-    #     scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer, max_lr=0.01, steps_per_epoch=len(train_loader), epochs=cfg.epochs, last_epoch=-1)
     scheduler = None
     global best_metric
     best_metric = 0

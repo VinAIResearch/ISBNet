@@ -585,6 +585,22 @@ def get_cropped_instance_label(instance_label, valid_idxs=None):
     return instance_label
 
 
+def custom_scatter_mean(input_feats, indices, dim=0, pool=True, output_type=None):
+    if not pool:
+        return input_feats
+
+    original_type = input_feats.dtype
+    with torch.cuda.amp.autocast(enabled=False):
+        out_feats = torch_scatter.scatter_mean(input_feats.to(torch.float32), indices, dim=dim)
+
+    if output_type is None:
+        out_feats = out_feats.to(original_type)
+    else:
+        out_feats = out_feats.to(output_type)
+
+    return out_feats
+
+
 def superpoint_major_voting(
     labels, superpoint, n_classes, has_ignore_label=False, ignore_label=-100, return_full=True
 ):
@@ -661,8 +677,10 @@ def get_subsample_gt(
     return subsample_inst_mask_arr
 
 
-def get_spp_gt(instance_labels, spps, instance_cls, instance_box, batch_offsets, batch_size, ignore_label=-100):
-    original_type = instance_box.dtype
+def get_spp_gt(
+    instance_labels, spps, instance_cls, instance_box, batch_offsets, batch_size, ignore_label=-100, pool=True
+):
+    # original_type = instance_box.dtype
     spp_inst_mask_arr = []
     for b in range(batch_size):
         start, end = batch_offsets[b], batch_offsets[b + 1]
@@ -692,8 +710,10 @@ def get_spp_gt(instance_labels, spps, instance_cls, instance_box, batch_offsets,
 
         for i, uni_id in enumerate(unique_inst):
             mask_ = instance_labels_b == uni_id
-            with torch.cuda.amp.autocast(enabled=False):
-                spp_mask_ = torch_scatter.scatter_mean(mask_.float(), spp_b).to(original_type)
+            # with torch.cuda.amp.autocast(enabled=False):
+            # spp_mask_ = torch_scatter.scatter_mean(mask_.float(), spp_b).to(original_type)
+
+            spp_mask_ = custom_scatter_mean(mask_, spp_b, pool=pool)
 
             cond_ = spp_mask_ >= 0.5
             spp_mask_labels_b[i] = cond_.float()

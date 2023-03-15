@@ -41,6 +41,7 @@ class STPLS3DDataset(CustomDataset):
             xyz, rgb, semantic_label, instance_label = torch.load(filename)
 
         # NOTE currently stpls3d does not have spps, we will add later
-        spp = np.zeros(xyz.shape[0], dtype=np.long)
+        # spp = np.zeros(xyz.shape[0], dtype=np.long)
+        spp = np.arange(xyz.shape[0], dtype=np.long)
 
         return xyz, rgb, semantic_label, instance_label, spp

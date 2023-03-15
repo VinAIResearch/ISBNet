@@ -16,10 +16,10 @@ conda activate isbnet
 
 2\) Install the dependencies.
 ```
-conda install pytorch==1.12.0 torchvision==0.12.0 cudatoolkit=11.3 -c pytorch
-pip install spconv-cu113
-pip install -r requirements.txt
-pip install torch-scatter -f https://data.pyg.org/whl/torch-1.12.0+cu113.html
+conda install pytorch==1.12.0 torchvision==0.13.0 cudatoolkit=11.3 -c pytorch
+pip3 install spconv-cu113==2.1.25
+pip3 install -r requirements.txt
+pip3 install torch-scatter -f https://data.pyg.org/whl/torch-1.12.0+cu113.html
 ```
 
 4\) Install build requirement.
