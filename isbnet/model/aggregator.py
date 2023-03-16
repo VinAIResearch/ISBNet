@@ -7,28 +7,6 @@ from isbnet.pointnet2.pointnet2_utils import ball_query, furthest_point_sample
 from .module_utils import Conv1d, SharedMLP
 
 
-def get_iou(box_preds, box_gt):
-
-    coords_min_pred = box_preds[..., 0:3]  # n_queries x 3
-    coords_max_pred = box_preds[..., 3:6]  # n_queries x 3
-
-    coords_min_gt = box_gt[..., 0:3]  # n_inst x 3
-    coords_max_gt = box_gt[..., 3:6]  # n_inst x 3
-
-    upper = torch.min(coords_max_pred, coords_max_gt)  # Nx3
-    lower = torch.max(coords_min_pred, coords_min_gt)  # Nx3
-
-    intersection = torch.prod(torch.clamp((upper - lower), min=0.0), -1)  # N
-
-    gt_volumes = torch.prod(torch.clamp((coords_max_gt - coords_min_gt), min=0.0), -1)
-    pred_volumes = torch.prod(torch.clamp((coords_max_pred - coords_min_pred), min=0.0), -1)
-
-    union = gt_volumes + pred_volumes - intersection
-    iou = intersection / (union + 1e-6)
-
-    return iou
-
-
 class LocalAggregator(nn.Module):
     def __init__(
         self,
