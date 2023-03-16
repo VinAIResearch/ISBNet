@@ -32,7 +32,7 @@ model:
     npoint_thresh: 400
     topk: -1
 
-  fixed_modules: ['input_conv', 'unet', 'output_layer', 'semantic_linear', 'offset_linear', 'offset_vertices_linear', 'box_conf_linear']
+  fixed_modules: []
 
 data:
   train:
@@ -82,10 +82,10 @@ save_cfg:
   object_conditions: False
 
 fp16: False
-epochs: 120
-step_epoch: 40
+epochs: 80
+step_epoch: 30
 save_freq: 4
-pretrain: 'pretrains/s3dis/best_pretrain_val_area5.pth'
+pretrain: 'pretrains/scannetv2/best_pretrain.pth' # We can load pretrain of ScanNetV2 or train from scratch
 work_dir: ''
 
 # best weight: pretrains/best_baseline.pth
