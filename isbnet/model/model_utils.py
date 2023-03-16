@@ -106,7 +106,10 @@ def standard_nms(proposals_pred, scores, categories, boxes, threshold=0.2):
     return proposals_pred[get_idxs], categories[get_idxs], scores[get_idxs], boxes[get_idxs]
 
 
-def matrix_nms(proposals_pred, scores, categories, boxes, final_score_thresh=0.1, topk=-1):
+def matrix_nms(proposals_pred, categories, scores, boxes, final_score_thresh=0.1, topk=-1):
+    if len(categories) == 0:
+        return proposals_pred, categories, scores, boxes
+    
     ixs = torch.argsort(scores, descending=True)
     n_samples = len(ixs)
 
@@ -710,10 +713,7 @@ def get_spp_gt(
 
         for i, uni_id in enumerate(unique_inst):
             mask_ = instance_labels_b == uni_id
-            # with torch.cuda.amp.autocast(enabled=False):
-            # spp_mask_ = torch_scatter.scatter_mean(mask_.float(), spp_b).to(original_type)
-
-            spp_mask_ = custom_scatter_mean(mask_, spp_b, pool=pool)
+            spp_mask_ = custom_scatter_mean(mask_, spp_b, pool=pool, output_type=torch.float32)
 
             cond_ = spp_mask_ >= 0.5
             spp_mask_labels_b[i] = cond_.float()

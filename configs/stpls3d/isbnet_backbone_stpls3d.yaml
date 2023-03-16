@@ -9,7 +9,7 @@ model:
   with_coords: False
   ignore_label: -100
   voxel_scale: 3
-  use_spp_pool: True
+  use_spp_pool: False
   filter_bg_thresh: 0.1
   instance_head_cfg:
     dec_dim: 128
@@ -29,7 +29,7 @@ model:
     sem_inst_cls_thresh: 0.2
     logit_thresh: 0.0
     score_thresh: 0.2
-    npoint_thresh: 100
+    npoint_thresh: 10
     topk: 100
 
   fixed_modules: []
@@ -62,7 +62,7 @@ data:
 
 dataloader:
   train:
-    batch_size: 16
+    batch_size: 32
     num_workers: 16
   test:
     batch_size: 1
@@ -81,8 +81,8 @@ save_cfg:
   nmc_clusters: False
   object_conditions: False
 
-fp16: True
-epochs: 80
+fp16: False
+epochs: 100
 step_epoch: 30
 save_freq: 4
 pretrain: ''

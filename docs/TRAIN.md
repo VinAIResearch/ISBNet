@@ -18,6 +18,8 @@ Train our ISBNet:
 python3 tools/train.py configs/scannetv2/isbnet_scannetv2.yaml --trainall --exp_name default
 ```
 
+On a single A100 GPU (40GB RAM), training ISBNet on ScanNetV2 training set takes around 22 hours. 
+
 2\) Training S3DIS dataset
 
 ```

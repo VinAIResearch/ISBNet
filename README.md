@@ -41,8 +41,8 @@ Details of the model architecture and experimental results can be found in [our 
 
 - [x] ScanNetV2
 - [x] S3DIS
-- [ ] STPLS3D
-- [ ] ScanNetV2-200
+- [ ] STPLS3D (available soon)
+- [ ] ScanNetV2-200 (available soon)
 
 ## Installation
 Please refer to [installation guide](docs/INSTALL.md).
@@ -55,7 +55,7 @@ Please refer to [training guide](docs/TRAIN.md).
 
 ## Quick Demo
 
-We provide pre-trained models on ScanNetV2 validation set ([GoogleDrive](https://drive.google.com/file/d/1-GQpYlcVRV5r6qDg-Z7_90CIIfu4kmq8/view?usp=sharing)) and S3DIS Area 5 validation ([GoogleDrive](https://drive.google.com/file/d/1oup4nEdgsmdwnMP1TQPmoIqZ8c1RoTgA/view?usp=sharing)).
+We provide trained models on ScanNetV2 validation set ([GoogleDrive](https://drive.google.com/file/d/1-GQpYlcVRV5r6qDg-Z7_90CIIfu4kmq8/view?usp=sharing)) and S3DIS Area 5 validation ([GoogleDrive](https://drive.google.com/file/d/1oup4nEdgsmdwnMP1TQPmoIqZ8c1RoTgA/view?usp=sharing)).
 
 1\) ScanNetV2 validation set:
 
@@ -70,7 +70,7 @@ python3 tools/test.py configs/s3dis/isbnet_s3dis_area5.yaml pretrains/s3dis/best
 ```
 
 ## Acknowledgements
-This repo is built upon [spconv](https://github.com/traveller59/spconv), [DyCo3D](https://github.com/aim-uofa/DyCo3D), [SoftGroup](https://github.com/thangvubk/SoftGroup). 
+This repo is built upon [SpConv](https://github.com/traveller59/spconv), [DyCo3D](https://github.com/aim-uofa/DyCo3D), [SSTNet](https://github.com/Gorilla-Lab-SCUT/SSTNet), and [SoftGroup](https://github.com/thangvubk/SoftGroup). 
 
 ## Contacts
 If you have any questions or suggestions about this repo, please feel free to contact me (ductuan.ngo99@gmail.com).
