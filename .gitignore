@@ -73,6 +73,10 @@ dataset/scannetv2/val_gt
 dataset/scannetv2/scannetv2-labels.combined.tsv
 dataset/scannetv2/superpoints
 
+dataset/scannet200/train
+dataset/scannet200/val
+dataset/scannet200/superpoints
+
 dataset/s3dis/preprocess
 dataset/s3dis/preprocess_sample
 dataset/s3dis/Stanford3dDataset_v1.2
