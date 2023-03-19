@@ -1,15 +1,18 @@
 import warnings
-warnings.filterwarnings("ignore", category=DeprecationWarning)
 from concurrent.futures import ProcessPoolExecutor
 from itertools import repeat
 import torch
 import numpy as np
 import os
-
+import glob
+import argparse
 # Load external constants
 from scannet200_constants import *
 from scannet200_splits import *
 from utils import *
+
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+
 
 CLOUD_FILE_PFIX = '_vh_clean_2'
 SEGMENTS_FILE_PFIX = '.0.010000.segs.json'
