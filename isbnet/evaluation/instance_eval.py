@@ -247,6 +247,8 @@ class ScanNetEval(object):
         # NOTE process label gt for each type of dataset
         if self.dataset_name == "scannetv2":
             gts_sem = gts_sem - 2 + 1
+        elif self.dataset_name == "scannet200":
+            gts_sem = gts_sem - 2 + 1
         elif self.dataset_name == "stpls3d":
             gts_sem = gts_sem - 1 + 1
         else:

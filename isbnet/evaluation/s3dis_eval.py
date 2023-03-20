@@ -3,6 +3,9 @@ from scipy import stats
 
 import multiprocessing as mp
 from ..util import rle_decode
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
+
 
 
 class S3DISEval(object):
@@ -49,6 +52,34 @@ class S3DISEval(object):
 
         total_gt_ins = [0 for _ in range(self.num_classes)]
 
+        # pred_sem = v['pred_classes'] - 1
+        pred_sem = np.zeros(gt_sem.shape[0], dtype=np.int)
+        # TODO CONTINUE HERE!!!!!!!!!!!!!
+        pred_ins = np.zeros(gt_sem.shape[0], dtype=np.int)
+
+        pred_masks, pred_confs, pred_labels = [], [], []
+        for pred in preds:
+            # pred_mask = rle_decode(pred["pred_mask"])
+            # pred_score = pred['score']
+            # pred_label = pred['label_id']
+
+            pred_masks.append(rle_decode(pred["pred_mask"]))
+            pred_confs.append(pred['conf'])
+            pred_labels.append(pred['label_id'])
+        
+        pred_confs = np.array(pred_confs)
+        sorted_inds = np.argsort(pred_confs) # ascendent
+        for i, s_id in enumerate(sorted_inds):
+            point_ids = (pred_masks[s_id] == 1)
+            pred_ins[point_ids] = i + 1
+            pred_sem[point_ids] = pred_labels[s_id] - 1
+
+
+        # for inst_id in reversed(range(v['pred_masks'].shape[1])):
+        #     point_ids = np.argwhere(v['pred_masks'][:, inst_id] == 1.)[:, 0]
+        #     pred_ins[point_ids] = inst_id + 1
+        #     pred_sem[point_ids] = v['pred_classes'][inst_id] - 1
+
         un = np.unique(gt_ins)
         pts_in_gt = [[] for itmp in range(self.num_classes)]
         for ig, g in enumerate(un):
@@ -58,15 +89,24 @@ class S3DISEval(object):
             sem_seg_i = int(stats.mode(gt_sem[tmp], axis=0)[0])
             pts_in_gt[sem_seg_i] += [tmp]
 
-        pts_in_pred = [[] for itmp in range(self.num_classes)]
-        for pred in preds:
-            pred_mask = pred["pred_mask"]
-            # pred_mask can be np.array or rle dict
-            if isinstance(pred_mask, dict):
-                pred_mask = rle_decode(pred_mask)
+        # pts_in_pred = [[] for itmp in range(self.num_classes)]
+        # for pred in preds:
+        #     pred_mask = pred["pred_mask"]
+        #     # pred_mask can be np.array or rle dict
+        #     if isinstance(pred_mask, dict):
+        #         pred_mask = rle_decode(pred_mask)
 
-            label_id = pred["label_id"] - 1
-            pts_in_pred[label_id] += [pred_mask]
+        #     label_id = pred["label_id"] - 1
+        #     pts_in_pred[label_id] += [pred_mask]
+        # instance
+        un = np.unique(pred_ins)
+        pts_in_pred = [[] for itmp in range(self.num_classes)]
+        for ig, g in enumerate(un):  # each object in prediction
+            if g == -1:
+                continue
+            tmp = (pred_ins == g)
+            sem_seg_i = int(stats.mode(pred_sem[tmp])[0])
+            pts_in_pred[sem_seg_i] += [tmp]
 
         # instance mucov & mwcov
         for i_sem in range(self.num_classes):

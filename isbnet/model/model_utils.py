@@ -74,7 +74,7 @@ def nms_and_merge(proposals_pred, scores, classes, threshold):
     return pick, proposals
 
 
-def standard_nms(proposals_pred, scores, categories, boxes, threshold=0.2):
+def standard_nms(proposals_pred, categories, scores, boxes, threshold=0.2):
     ixs = torch.argsort(scores, descending=True)
     # n_samples = len(ixs)
 
@@ -158,6 +158,14 @@ def matrix_nms(proposals_pred, categories, scores, boxes, final_score_thresh=0.1
         cate_scores_update[get_idxs],
         boxes_sorted[get_idxs],
     )
+
+def nms(proposals_pred, categories, scores, boxes, test_cfg):
+    if test_cfg.nms_type == 'matrix':
+        return  matrix_nms(proposals_pred, categories, scores, boxes, topk=test_cfg.topk)
+    elif test_cfg.nms_type =='standard':
+        return standard_nms(proposals_pred, categories, scores, boxes, threshold=test_cfg.nms_threshold)
+    else:
+        raise RuntimeError('Invalid nms type')
 
 
 def compute_dice_loss(inputs, targets):

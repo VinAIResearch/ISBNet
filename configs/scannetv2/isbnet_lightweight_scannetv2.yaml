@@ -9,6 +9,9 @@ model:
   with_coords: True
   ignore_label: -100
   voxel_scale: 50
+  use_spp_pool: True
+  filter_bg_thresh: 0.1
+  iterative_sampling: True
   instance_head_cfg:
     dec_dim: 128
     n_sample_pa1: 2048
@@ -16,15 +19,8 @@ model:
     radius_scale: 1
     radius: 0.4
     neighbor: 32
-
-  train_cfg:
-    max_proposal_num: 400
-    pos_iou_thr: 0.5
-    focal_loss: False
-    dice_loss: False
   test_cfg:
     x4_split: False
-    sem_inst_cls_thresh: 0.2
     logit_thresh: 0.0
     score_thresh: 0.2
     npoint_thresh: 100

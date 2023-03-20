@@ -11,22 +11,16 @@ model:
   voxel_scale: 3
   use_spp_pool: False
   filter_bg_thresh: 0.1
+  iterative_sampling: False
   instance_head_cfg:
-    dec_dim: 128
+    dec_dim: 64
     n_sample_pa1: 2048
     n_queries: 256
-    radius_scale: 4
+    radius_scale: 10
     radius: 0.4
     neighbor: 16
-
-  train_cfg:
-    max_proposal_num: 400
-    pos_iou_thr: 0.5
-    focal_loss: False
-    dice_loss: False
   test_cfg:
     x4_split: False
-    sem_inst_cls_thresh: 0.2
     logit_thresh: 0.0
     score_thresh: 0.2
     npoint_thresh: 10
@@ -62,7 +56,7 @@ data:
 
 dataloader:
   train:
-    batch_size: 24
+    batch_size: 16
     num_workers: 16
   test:
     batch_size: 1

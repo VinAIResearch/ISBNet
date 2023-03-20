@@ -16,7 +16,7 @@ from .model_utils import (
     get_cropped_instance_label,
     get_instance_info,
     get_spp_gt,
-    matrix_nms,
+    nms,
     superpoint_align,
     random_downsample,
     get_subsample_gt,
@@ -36,7 +36,6 @@ class ISBNet(nn.Module):
         ignore_label=-100,
         with_coords=True,
         instance_head_cfg=None,
-        train_cfg=None,
         test_cfg=None,
         fixed_modules=[],
         criterion=None,
@@ -45,6 +44,7 @@ class ISBNet(nn.Module):
         voxel_scale=50,
         use_spp_pool=True,
         filter_bg_thresh=0.1,
+        iterative_sampling=True,
     ):
         super().__init__()
         self.channels = channels
@@ -57,7 +57,6 @@ class ISBNet(nn.Module):
         self.ignore_label = ignore_label
         self.with_coords = with_coords
         self.instance_head_cfg = instance_head_cfg
-        self.train_cfg = train_cfg
         self.test_cfg = test_cfg
         self.fixed_modules = fixed_modules
         self.voxel_scale = voxel_scale
@@ -73,7 +72,7 @@ class ISBNet(nn.Module):
         self.filter_bg_thresh = filter_bg_thresh
 
         # NOTE iterative sampling
-        self.iterative_sampling = True
+        self.iterative_sampling = iterative_sampling
 
         in_channels = 6 if with_coords else 3
 
@@ -348,11 +347,11 @@ class ISBNet(nn.Module):
             )
 
         else:
-            idxs_subsample = random_downsample(voxel_batch_offsets_, batch_size, n_subsample=30000)
-            dc_coords_float = voxel_coords_float_[idxs_subsample]
-            dc_box_preds = voxel_box_preds_[idxs_subsample]
-            dc_output_feats = voxel_output_feats_[idxs_subsample]
-            dc_batch_offsets = get_batch_offsets(voxel_batch_idxs_[idxs_subsample], batch_size)
+            idxs_subsample = random_downsample(voxel_batch_offsets, batch_size, n_subsample=15000)
+            dc_coords_float = voxel_coords_float[idxs_subsample]
+            dc_box_preds = voxel_box_preds[idxs_subsample]
+            dc_output_feats = voxel_output_feats[idxs_subsample]
+            dc_batch_offsets = get_batch_offsets(voxel_batch_idxs[idxs_subsample], batch_size)
 
             subsample_idxs = object_idxs[idxs_subsample]
             dc_inst_mask_arr = get_subsample_gt(
@@ -921,8 +920,8 @@ class ISBNet(nn.Module):
         boxes_final = boxes_final[npoints_cond]
 
         # NOTE NMS
-        masks_final, cls_final, scores_final, boxes_final = matrix_nms(
-            masks_final, cls_final, scores_final, boxes_final, topk=self.test_cfg.topk
+        masks_final, cls_final, scores_final, boxes_final = nms(
+            masks_final, cls_final, scores_final, boxes_final, test_cfg=self.test_cfg
         )
 
         if len(cls_final) == 0:
@@ -959,6 +958,8 @@ class ISBNet(nn.Module):
             pred["scan_id"] = scan_id
 
             if self.dataset_name == "scannetv2":
+                pred["label_id"] = cls_final[i] + 1
+            elif self.dataset_name == "scannet200":
                 pred["label_id"] = cls_final[i] + 1
             elif self.dataset_name == "s3dis":
                 pred["label_id"] = cls_final[i] + 3
