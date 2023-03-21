@@ -40,22 +40,22 @@ Details of the model architecture and experimental results can be found in [our 
 ## Dataset
 
 - [x] ScanNetV2
+- [x] ScanNetV2-200
 - [x] S3DIS
 - [ ] STPLS3D (available soon)
-- [ ] ScanNetV2-200 (available soon)
 
 ## Installation
 Please refer to [installation guide](docs/INSTALL.md).
 
 ## Data Preparation
-Please refer to [data preparation](docs/DATA_PREPARATION.md).
+Please refer to [data preparation](dataset/README.md).
 
 ## Training and Testing
 Please refer to [training guide](docs/TRAIN.md).
 
 ## Quick Demo
 
-We provide trained models on ScanNetV2 validation set ([GoogleDrive](https://drive.google.com/file/d/1-GQpYlcVRV5r6qDg-Z7_90CIIfu4kmq8/view?usp=sharing)) and S3DIS Area 5 validation ([GoogleDrive](https://drive.google.com/file/d/1oup4nEdgsmdwnMP1TQPmoIqZ8c1RoTgA/view?usp=sharing)).
+We provide trained models on ScanNetV2 validation set ([GoogleDrive](https://drive.google.com/file/d/1-GQpYlcVRV5r6qDg-Z7_90CIIfu4kmq8/view?usp=sharing)), ScanNetV2-200 validation set ([GoogleDrive](https://drive.google.com/file/d/1ZEZgQeT6dIakljSTx4s5YZM0n2rwC3Kw/view?usp=share_link)) and S3DIS Area 5 validation ([GoogleDrive](https://drive.google.com/file/d/1oup4nEdgsmdwnMP1TQPmoIqZ8c1RoTgA/view?usp=sharing)).
 
 1\) ScanNetV2 validation set:
 
@@ -63,7 +63,13 @@ We provide trained models on ScanNetV2 validation set ([GoogleDrive](https://dri
 python3 tools/test.py configs/scannetv2/isbnet_scannetv2.yaml pretrains/scannetv2/best_head.pth
 ```
 
-2\) S3DIS Area5 validation:
+2\) ScanNetV2-200 validation set:
+
+```
+python3 tools/test.py configs/scannet200/isbnet_scannet200.yaml pretrains/scannet200/best_head.pth
+```
+
+3\) S3DIS Area5 validation:
 
 ```
 python3 tools/test.py configs/s3dis/isbnet_s3dis_area5.yaml pretrains/s3dis/best_head_val_area5.pth

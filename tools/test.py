@@ -160,7 +160,7 @@ def main():
 
     else:
         logger.info("Evaluate instance segmentation")
-        avgs = scannet_eval.evaluate(pred_insts, sem_labels, ins_labels)
+        scannet_eval.evaluate(pred_insts, sem_labels, ins_labels)
 
         if cfg.data.test.type == "s3dis":
             logger.info("Evaluate instance segmentation by S3DIS metrics")
@@ -169,11 +169,11 @@ def main():
     mean_time = np.array(time_arr).mean()
 
     logger.info(f"Average run time: {mean_time:.4f}")
-    
+
     # save output
     if not args.out:
         return
-    
+
     logger.info("Save results")
     if cfg.save_cfg.semantic:
         save_npy(args.out, "semantic_pred", scan_ids, sem_preds)

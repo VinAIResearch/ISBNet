@@ -109,7 +109,7 @@ def standard_nms(proposals_pred, categories, scores, boxes, threshold=0.2):
 def matrix_nms(proposals_pred, categories, scores, boxes, final_score_thresh=0.1, topk=-1):
     if len(categories) == 0:
         return proposals_pred, categories, scores, boxes
-    
+
     ixs = torch.argsort(scores, descending=True)
     n_samples = len(ixs)
 
@@ -159,13 +159,14 @@ def matrix_nms(proposals_pred, categories, scores, boxes, final_score_thresh=0.1
         boxes_sorted[get_idxs],
     )
 
+
 def nms(proposals_pred, categories, scores, boxes, test_cfg):
-    if test_cfg.type_nms == 'matrix':
-        return  matrix_nms(proposals_pred, categories, scores, boxes, topk=test_cfg.topk)
-    elif test_cfg.type_nms =='standard':
+    if test_cfg.type_nms == "matrix":
+        return matrix_nms(proposals_pred, categories, scores, boxes, topk=test_cfg.topk)
+    elif test_cfg.type_nms == "standard":
         return standard_nms(proposals_pred, categories, scores, boxes, threshold=test_cfg.nms_threshold)
     else:
-        raise RuntimeError('Invalid nms type')
+        raise RuntimeError("Invalid nms type")
 
 
 def compute_dice_loss(inputs, targets):

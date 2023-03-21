@@ -5,9 +5,9 @@ import numpy as np
 
 import multiprocessing as mp
 from copy import deepcopy
+from isbnet.data.scannet200 import ScanNet200Dataset
 from ..util import rle_decode
 from .instance_eval_util import get_instances
-from isbnet.data.scannet200 import ScanNet200Dataset
 
 
 class ScanNetEval(object):
@@ -525,7 +525,7 @@ class ScanNetEval(object):
         # print
         self.print_results(avgs)
 
-        if self.dataset_name == 'scannet200':
+        if self.dataset_name == "scannet200":
             self.print_ap_scannet200(avgs)
 
         return avgs
@@ -559,10 +559,9 @@ class ScanNetEval(object):
         # print
         self.print_results(avgs)
         return avgs
-    
 
     def print_ap_scannet200(self, avgs):
-        print('ScanNet200 Evaluation')
+        print("ScanNet200 Evaluation")
         head_results, tail_results, common_results = [], [], []
         for (li, class_name) in enumerate(self.eval_class_labels):
             # class_name = ScanNet200Dataset.CLASSES[i]
@@ -581,7 +580,7 @@ class ScanNetEval(object):
             elif class_name in ScanNet200Dataset.TAIL_CATS_SCANNET_200:
                 tail_results.append(np.array([ap_avg, ap_50o, ap_25o]))
             else:
-                assert(False, 'class not known!')
+                raise ValueError("Unknown class name!!!")
 
         head_results = np.stack(head_results)
         common_results = np.stack(common_results)
@@ -629,4 +628,3 @@ class ScanNetEval(object):
         print(line)
         print("#" * lineLen)
         print()
-

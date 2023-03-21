@@ -37,6 +37,28 @@ ISBNet
 │   │   ├── superpoints
 ```
 
+## ScanNetV2-200 dataset
+
+1\) Download the new `scannetv2-labels.combined.tsv` from ScanNetV2 and put it to folder `dataset/scannet200`.
+
+2\) Split and preprocess data
+
+```
+cd ISBNet/dataset/scannet200
+bash prepare_data.sh
+```
+
+The script data into train/val/test folder and preprocess the data. After running the script the scannet200 dataset structure should look like below.
+
+```
+ISBNet
+├── dataset
+│   ├── scannet200
+│   │   ├── train
+│   │   ├── val
+│   │   ├── test
+│   │   ├── superpoints
+```
 
 ## S3DIS dataset
 
@@ -107,27 +129,4 @@ ISBNet
 │   ├── stpls3d
 │   │   ├── train
 │   │   ├── val
-```
-
-## ScanNet200 dataset
-
-1\) Download the new `scannetv2-labels.combined.tsv` from ScanNetV2 and put it to folder `dataset/scannet200`.
-
-2\) Split and preprocess data
-
-```
-cd ISBNet/dataset/scannet200
-bash prepare_data.sh
-```
-
-The script data into train/val/test folder and preprocess the data. After running the script the scannet200 dataset structure should look like below.
-
-```
-ISBNet
-├── dataset
-│   ├── scannet200
-│   │   ├── train
-│   │   ├── val
-│   │   ├── test
-│   │   ├── superpoints
 ```

@@ -2,10 +2,11 @@ import numpy as np
 from scipy import stats
 
 import multiprocessing as mp
-from ..util import rle_decode
 import warnings
-warnings.simplefilter(action='ignore', category=FutureWarning)
+from ..util import rle_decode
 
+
+warnings.simplefilter(action="ignore", category=FutureWarning)
 
 
 class S3DISEval(object):
@@ -64,16 +65,15 @@ class S3DISEval(object):
             # pred_label = pred['label_id']
 
             pred_masks.append(rle_decode(pred["pred_mask"]))
-            pred_confs.append(pred['conf'])
-            pred_labels.append(pred['label_id'])
-        
+            pred_confs.append(pred["conf"])
+            pred_labels.append(pred["label_id"])
+
         pred_confs = np.array(pred_confs)
-        sorted_inds = np.argsort(pred_confs) # ascendent
+        sorted_inds = np.argsort(pred_confs)  # ascendent
         for i, s_id in enumerate(sorted_inds):
-            point_ids = (pred_masks[s_id] == 1)
+            point_ids = pred_masks[s_id] == 1
             pred_ins[point_ids] = i + 1
             pred_sem[point_ids] = pred_labels[s_id] - 1
-
 
         # for inst_id in reversed(range(v['pred_masks'].shape[1])):
         #     point_ids = np.argwhere(v['pred_masks'][:, inst_id] == 1.)[:, 0]
@@ -104,7 +104,7 @@ class S3DISEval(object):
         for ig, g in enumerate(un):  # each object in prediction
             if g == -1:
                 continue
-            tmp = (pred_ins == g)
+            tmp = pred_ins == g
             sem_seg_i = int(stats.mode(pred_sem[tmp])[0])
             pts_in_pred[sem_seg_i] += [tmp]
 

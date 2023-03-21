@@ -13,13 +13,12 @@ from .blocks import MLP, GenericMLP, ResidualBlock, UBlock, conv_with_kaiming_un
 from .model_utils import (
     custom_scatter_mean,
     get_batch_offsets,
-    get_cropped_instance_label,
     get_instance_info,
     get_spp_gt,
-    nms,
-    superpoint_align,
-    random_downsample,
     get_subsample_gt,
+    nms,
+    random_downsample,
+    superpoint_align,
 )
 
 
@@ -299,7 +298,7 @@ class ISBNet(nn.Module):
             voxel_semantic_scores_sm, voxel_spps, dim=0, pool=self.use_spp_pool
         )
         spp_object_conditions = torch.any(
-            spp_semantic_scores_sm[:, self.label_shift:] >= self.filter_bg_thresh, dim=-1
+            spp_semantic_scores_sm[:, self.label_shift :] >= self.filter_bg_thresh, dim=-1
         )
         object_conditions = spp_object_conditions[voxel_spps]
         object_idxs = torch.nonzero(object_conditions).view(-1)
