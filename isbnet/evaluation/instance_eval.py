@@ -7,6 +7,7 @@ import multiprocessing as mp
 from copy import deepcopy
 from ..util import rle_decode
 from .instance_eval_util import get_instances
+from isbnet.data.scannet200 import ScanNet200Dataset
 
 
 class ScanNetEval(object):
@@ -523,6 +524,10 @@ class ScanNetEval(object):
 
         # print
         self.print_results(avgs)
+
+        if self.dataset_name == 'scannet200':
+            self.print_ap_scannet200(avgs)
+
         return avgs
 
     def evaluate_box(self, pred_list, gt_list, coords_list):
@@ -554,3 +559,74 @@ class ScanNetEval(object):
         # print
         self.print_results(avgs)
         return avgs
+    
+
+    def print_ap_scannet200(self, avgs):
+        print('ScanNet200 Evaluation')
+        head_results, tail_results, common_results = [], [], []
+        for (li, class_name) in enumerate(self.eval_class_labels):
+            # class_name = ScanNet200Dataset.CLASSES[i]
+            ap_avg = avgs["classes"][class_name]["ap"]
+            ap_50o = avgs["classes"][class_name]["ap50%"]
+            ap_25o = avgs["classes"][class_name]["ap25%"]
+
+            if class_name not in ScanNet200Dataset.VALID_CLASS_IDS_200_VALIDATION:
+                continue
+
+            # results.append(np.array(ap_avg, ap_50o, ap_25o))
+            if class_name in ScanNet200Dataset.HEAD_CATS_SCANNET_200:
+                head_results.append(np.array([ap_avg, ap_50o, ap_25o]))
+            elif class_name in ScanNet200Dataset.COMMON_CATS_SCANNET_200:
+                common_results.append(np.array([ap_avg, ap_50o, ap_25o]))
+            elif class_name in ScanNet200Dataset.TAIL_CATS_SCANNET_200:
+                tail_results.append(np.array([ap_avg, ap_50o, ap_25o]))
+            else:
+                assert(False, 'class not known!')
+
+        head_results = np.stack(head_results)
+        common_results = np.stack(common_results)
+        tail_results = np.stack(tail_results)
+
+        mean_tail_results = np.nanmean(tail_results, axis=0)
+        mean_common_results = np.nanmean(common_results, axis=0)
+        mean_head_results = np.nanmean(head_results, axis=0)
+        overall_ap_results = np.nanmean(np.vstack((head_results, common_results, tail_results)), axis=0)
+
+        sep = ""
+        col1 = ":"
+        lineLen = 48
+
+        print()
+        print("#" * lineLen)
+        line = ""
+        line += "{:<15}".format("what") + sep + col1
+        line += "{:>8}".format("AP") + sep
+        line += "{:>8}".format("AP_50%") + sep
+        line += "{:>8}".format("AP_25%") + sep
+
+        print(line)
+        print("#" * lineLen)
+        line = "{:<15}".format("Head AP") + sep + col1
+        line += "{:>8.3f}".format(mean_head_results[0]) + sep
+        line += "{:>8.3f}".format(mean_head_results[1]) + sep
+        line += "{:>8.3f}".format(mean_head_results[2]) + sep
+        print(line)
+        line = "{:<15}".format("Common AP") + sep + col1
+        line += "{:>8.3f}".format(mean_common_results[0]) + sep
+        line += "{:>8.3f}".format(mean_common_results[1]) + sep
+        line += "{:>8.3f}".format(mean_common_results[2]) + sep
+        print(line)
+        line = "{:<15}".format("Tail AP") + sep + col1
+        line += "{:>8.3f}".format(mean_tail_results[0]) + sep
+        line += "{:>8.3f}".format(mean_tail_results[1]) + sep
+        line += "{:>8.3f}".format(mean_tail_results[2]) + sep
+        print(line)
+        print("-" * lineLen)
+        line = "{:<15}".format("AP") + sep + col1
+        line += "{:>8.3f}".format(overall_ap_results[0]) + sep
+        line += "{:>8.3f}".format(overall_ap_results[1]) + sep
+        line += "{:>8.3f}".format(overall_ap_results[2]) + sep
+        print(line)
+        print("#" * lineLen)
+        print()
+

@@ -160,9 +160,9 @@ def matrix_nms(proposals_pred, categories, scores, boxes, final_score_thresh=0.1
     )
 
 def nms(proposals_pred, categories, scores, boxes, test_cfg):
-    if test_cfg.nms_type == 'matrix':
+    if test_cfg.type_nms == 'matrix':
         return  matrix_nms(proposals_pred, categories, scores, boxes, topk=test_cfg.topk)
-    elif test_cfg.nms_type =='standard':
+    elif test_cfg.type_nms =='standard':
         return standard_nms(proposals_pred, categories, scores, boxes, threshold=test_cfg.nms_threshold)
     else:
         raise RuntimeError('Invalid nms type')

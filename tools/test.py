@@ -160,49 +160,28 @@ def main():
 
     else:
         logger.info("Evaluate instance segmentation")
-        scannet_eval.evaluate(pred_insts, sem_labels, ins_labels)
+        avgs = scannet_eval.evaluate(pred_insts, sem_labels, ins_labels)
 
-        if cfg.data.train.type == "s3dis":
+        if cfg.data.test.type == "s3dis":
             logger.info("Evaluate instance segmentation by S3DIS metrics")
             s3dis_eval.evaluate(pred_insts, sem_labels, ins_labels)
-
-        # logger.info('Evaluate axis-align box prediction')
-        # scannet_eval.evaluate_box(pred_insts, gt_insts, coords)
-
-    # # NOTE eval proposal mask_box
-    # if not cfg.model.semantic_only:
-    #     logger.info('Evaluate instance segmentation nmc')
-    #     scannet_eval = ScanNetEval(dataset.CLASSES)
-    #     scannet_eval.evaluate(nmc_insts, gt_insts)
-
-    #     logger.info('Evaluate axis-align box prediction nmc')
-    #     scannet_eval.evaluate_box(nmc_insts, gt_insts, coords)
-
-    # logger.info('Evaluate semantic segmentation and offset MAE')
-    # ignore_label = cfg.model.ignore_label
-    # miou, acc, mae = point_eval.get_eval(logger)
-    # evaluate_semantic_miou(sem_preds, sem_labels, ignore_label, logger)
-    # evaluate_semantic_acc(sem_preds, sem_labels, ignore_label, logger)
-    # evaluate_offset_mae(offset_preds, offset_labels, inst_labels, ignore_label, logger)
 
     mean_time = np.array(time_arr).mean()
 
     logger.info(f"Average run time: {mean_time:.4f}")
+    
     # save output
     if not args.out:
         return
+    
     logger.info("Save results")
-    # save_npy(args.out, 'coords', scan_ids, coords)
     if cfg.save_cfg.semantic:
         save_npy(args.out, "semantic_pred", scan_ids, sem_preds)
-        # save_npy(args.out, 'semantic_label', scan_ids, sem_labels)
     if cfg.save_cfg.offset:
         save_npy(args.out, "offset_pred", scan_ids, offset_preds)
-        # save_npy(args.out, 'offset_label', scan_ids, offset_labels)
     if cfg.save_cfg.offset_vertices:
         save_npy(args.out, "offset_vertices_pred", scan_ids, offset_vertices_preds)
     if cfg.save_cfg.object_conditions:
-        # print('save obj conds')
         save_npy(args.out, "object_conditions", scan_ids, object_conditions)
     if cfg.save_cfg.instance:
         save_pred_instances(args.out, "pred_instance", scan_ids, pred_insts, dataset.BENCHMARK_SEMANTIC_IDXS)
