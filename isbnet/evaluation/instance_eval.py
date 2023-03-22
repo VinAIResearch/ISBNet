@@ -508,7 +508,7 @@ class ScanNetEval(object):
                     for each point:
                         gt_id = class_id * 1000 + instance_id
         """
-        pool = mp.Pool(16)
+        pool = mp.Pool(processes=16)
         results = pool.starmap(self.assign_instances_for_scan, zip(pred_list, gt_sem_list, gt_ins_list))
         pool.close()
         pool.join()
@@ -542,7 +542,7 @@ class ScanNetEval(object):
                     for each point:
                         gt_id = class_id * 1000 + instance_id
         """
-        pool = mp.Pool()
+        pool = mp.Pool(processes=16)
         results = pool.starmap(self.assign_boxes_for_scan, zip(pred_list, gt_list, coords_list))
         pool.close()
         pool.join()

@@ -58,6 +58,17 @@ class S3DISDataset(CustomDataset):
 
             semantic_label = semantic_label[inds]
             instance_label = self.getCroppedInstLabel(instance_label, inds)
+        elif N > 5000000: # NOTE Avoid OOM
+            inds = np.arange(N)[::4]
+            
+            xyz = xyz[inds]
+            rgb = rgb[inds]
+            spp = spp[inds]
+
+            spp = np.unique(spp, return_inverse=True)[1]
+
+            semantic_label = semantic_label[inds]
+            instance_label = self.getCroppedInstLabel(instance_label, inds)
 
         return xyz, rgb, semantic_label, instance_label, spp
 

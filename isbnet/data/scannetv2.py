@@ -33,7 +33,7 @@ class ScanNetDataset(CustomDataset):
         scan_id = osp.basename(filename).replace(self.suffix, "")
 
         if self.prefix == "test":
-            xyz, rgb = self.load(filename)
+            xyz, rgb = torch.load(filename)
             semantic_label = np.zeros(xyz.shape[0], dtype=np.long)
             instance_label = np.zeros(xyz.shape[0], dtype=np.long)
         else:

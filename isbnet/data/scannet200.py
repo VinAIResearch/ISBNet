@@ -817,7 +817,7 @@ class ScanNet200Dataset(CustomDataset):
         scan_id = osp.basename(filename).replace(self.suffix, "")
 
         if self.prefix == "test":
-            xyz, rgb = self.load(filename)
+            xyz, rgb = torch.load(filename)
             semantic_label = np.zeros(xyz.shape[0], dtype=np.long)
             instance_label = np.zeros(xyz.shape[0], dtype=np.long)
         else:
@@ -825,10 +825,6 @@ class ScanNet200Dataset(CustomDataset):
 
         spp_filename = osp.join(self.data_root, "superpoints", scan_id + ".pth")
         spp = torch.load(spp_filename)
-
-        # FIXME
-        # if np.max(rgb) > 10.0:
-        # rgb = rgb.astype(np.float32) / 127.5 - 1.0
 
         instance_label[semantic_label <= 1] = -100
         return xyz, rgb, semantic_label, instance_label, spp

@@ -119,6 +119,11 @@ def main():
         model.eval()
         for i, batch in enumerate(dataloader):
             t1 = time.time()
+
+            # NOTE avoid OOM during eval s3dis with full resolution
+            if cfg.data.train.type == "s3dis":
+                torch.cuda.empty_cache()
+                
             with torch.cuda.amp.autocast(enabled=cfg.fp16):
                 res = model(batch)
 

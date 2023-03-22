@@ -53,17 +53,11 @@ class S3DISEval(object):
 
         total_gt_ins = [0 for _ in range(self.num_classes)]
 
-        # pred_sem = v['pred_classes'] - 1
         pred_sem = np.zeros(gt_sem.shape[0], dtype=np.int)
-        # TODO CONTINUE HERE!!!!!!!!!!!!!
         pred_ins = np.zeros(gt_sem.shape[0], dtype=np.int)
 
         pred_masks, pred_confs, pred_labels = [], [], []
         for pred in preds:
-            # pred_mask = rle_decode(pred["pred_mask"])
-            # pred_score = pred['score']
-            # pred_label = pred['label_id']
-
             pred_masks.append(rle_decode(pred["pred_mask"]))
             pred_confs.append(pred["conf"])
             pred_labels.append(pred["label_id"])
@@ -71,14 +65,9 @@ class S3DISEval(object):
         pred_confs = np.array(pred_confs)
         sorted_inds = np.argsort(pred_confs)  # ascendent
         for i, s_id in enumerate(sorted_inds):
-            point_ids = pred_masks[s_id] == 1
+            point_ids = (pred_masks[s_id] == 1)
             pred_ins[point_ids] = i + 1
             pred_sem[point_ids] = pred_labels[s_id] - 1
-
-        # for inst_id in reversed(range(v['pred_masks'].shape[1])):
-        #     point_ids = np.argwhere(v['pred_masks'][:, inst_id] == 1.)[:, 0]
-        #     pred_ins[point_ids] = inst_id + 1
-        #     pred_sem[point_ids] = v['pred_classes'][inst_id] - 1
 
         un = np.unique(gt_ins)
         pts_in_gt = [[] for itmp in range(self.num_classes)]
@@ -89,18 +78,9 @@ class S3DISEval(object):
             sem_seg_i = int(stats.mode(gt_sem[tmp], axis=0)[0])
             pts_in_gt[sem_seg_i] += [tmp]
 
-        # pts_in_pred = [[] for itmp in range(self.num_classes)]
-        # for pred in preds:
-        #     pred_mask = pred["pred_mask"]
-        #     # pred_mask can be np.array or rle dict
-        #     if isinstance(pred_mask, dict):
-        #         pred_mask = rle_decode(pred_mask)
-
-        #     label_id = pred["label_id"] - 1
-        #     pts_in_pred[label_id] += [pred_mask]
         # instance
         un = np.unique(pred_ins)
-        pts_in_pred = [[] for itmp in range(self.num_classes)]
+        pts_in_pred = [[] for _ in range(self.num_classes)]
         for ig, g in enumerate(un):  # each object in prediction
             if g == -1:
                 continue
@@ -132,11 +112,9 @@ class S3DISEval(object):
 
             if len(pts_in_gt[i_sem]) != 0:
                 mean_cov = sum_cov / len(pts_in_gt[i_sem])
-                # self.all_mean_cov[i_sem].append(mean_cov)
                 mean_cov_arr[i_sem] = mean_cov
 
                 mean_weighted_cov /= num_gt_point
-                # self.all_mean_weighted_cov[i_sem].append(mean_weighted_cov)
                 mean_weighted_cov_arr[i_sem] = mean_weighted_cov
 
         # instance precision & recall
@@ -144,15 +122,12 @@ class S3DISEval(object):
             tp = [0.0] * len(pts_in_pred[i_sem])
             fp = [0.0] * len(pts_in_pred[i_sem])
             gtflag = np.zeros(len(pts_in_gt[i_sem]))
-            # self.total_gt_ins[i_sem] += len(pts_in_gt[i_sem])
             total_gt_ins[i_sem] = len(pts_in_gt[i_sem])
 
             for ip, ins_pred in enumerate(pts_in_pred[i_sem]):
                 ovmax = -1.0
 
                 for ig, ins_gt in enumerate(pts_in_gt[i_sem]):
-                    # if gtflag[ig] == 1:
-                    #     continue
 
                     union = ins_pred | ins_gt
                     intersect = ins_pred & ins_gt
@@ -170,14 +145,12 @@ class S3DISEval(object):
 
             tp_arr[i_sem] = tp
             fp_arr[i_sem] = fp
-            # self.tpsins[i_sem] += tp
-            # self.fpsins[i_sem] += fp
 
         return mean_cov_arr, mean_weighted_cov_arr, tp_arr, fp_arr, total_gt_ins
 
     def evaluate(self, pred_list, gt_sem_list, gt_ins_list):
 
-        pool = mp.Pool(processes=8)
+        pool = mp.Pool(processes=16)
         results = pool.starmap(self.single_process, zip(pred_list, gt_sem_list, gt_ins_list))
         pool.close()
         pool.join()
@@ -217,7 +190,7 @@ class S3DISEval(object):
 
         sep = ""
         col1 = ":"
-        lineLen = 64
+        lineLen = 48
 
         print()
         print("#" * lineLen)
@@ -249,9 +222,3 @@ class S3DISEval(object):
         print(f"mRecall: {mRec}")
 
         return mMUCov, mMWCov, mPrec, mRec
-
-        # instance results
-        # print('Instance Segmentation MUCov: {}'.format(MUCov))
-        # print('Instance Segmentation MWCov: {}'.format(MWCov))
-        # print('Instance Segmentation Precision: {}'.format(precision))
-        # print('Instance Segmentation Recall: {}'.format(recall))

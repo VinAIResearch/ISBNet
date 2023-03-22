@@ -82,5 +82,3 @@ step_epoch: 50
 save_freq: 4
 pretrain: 'pretrains/trainval/best_pretrain_trainval.pth'
 work_dir: ''
-
-# best weight: pretrains/best_baseline.pth

@@ -454,12 +454,6 @@ class ISBNet(nn.Module):
 
             return ret
 
-        # with torch.cuda.amp.autocast(enabled=False):
-        #     spp_semantic_scores_sm = torch_scatter.scatter_mean(
-        #         voxel_semantic_scores_sm.float(),
-        #         voxel_spps[:, None].expand(-1, voxel_semantic_scores_sm.shape[-1]),
-        #         dim=0,
-        #     )
         spp_semantic_scores_sm = custom_scatter_mean(
             voxel_semantic_scores_sm,
             voxel_spps[:, None].expand(-1, voxel_semantic_scores_sm.shape[-1]),
@@ -470,15 +464,6 @@ class ISBNet(nn.Module):
             spp_semantic_scores_sm[:, self.label_shift :] >= self.filter_bg_thresh, dim=-1
         )
         object_conditions = spp_object_conditions[voxel_spps]
-        # if self.use_spp_pool:
-        #     spp_object_conditions = torch.any(
-        #         spp_semantic_scores_sm[:, self.label_shift :] >= self.filter_bg_thresh, dim=-1
-        #     )
-        #     object_conditions = spp_object_conditions[voxel_spps]
-        # else:
-        #     object_conditions = torch.any(
-        #         voxel_semantic_scores_sm[:, self.label_shift :] >= self.filter_bg_thresh, dim=-1
-        #     )
 
         if object_conditions.sum() == 0:
             ret.update(dict(pred_instances=[]))
@@ -497,18 +482,6 @@ class ISBNet(nn.Module):
         dc_coords_float, dc_box_preds, dc_output_feats, dc_batch_offsets = self.spp_pool(
             voxel_coords_float, voxel_output_feats, voxel_box_preds, voxel_spps, voxel_batch_offsets
         )
-
-        # # NOTE Pool feats
-        # if self.use_spp_pool:
-        #     voxel_spps = torch.unique(voxel_spps, return_inverse=True)[1]
-        #     dc_coords_float, dc_box_preds, dc_output_feats, dc_batch_offsets = self.spp_pool(
-        #         voxel_coords_float, voxel_output_feats, voxel_box_preds, voxel_spps, voxel_batch_offsets
-        #     )
-        # else:
-        #     dc_coords_float = voxel_coords_float_
-        #     dc_box_preds = voxel_box_preds_
-        #     dc_output_feats = voxel_output_feats_
-        #     dc_batch_offsets = voxel_batch_offsets_
 
         dc_mask_features = self.mask_tower(torch.unsqueeze(dc_output_feats, dim=2).permute(2, 1, 0)).permute(2, 1, 0)
         # -------------------------------
@@ -579,13 +552,6 @@ class ISBNet(nn.Module):
             cls_logits, mask_logits, conf_logits, box_preds = forward_head_outputs
 
             mask_logit = mask_logits[:, voxel_spps]
-            # if self.use_spp_pool:
-            #     mask_logit = mask_logits[:, voxel_spps]
-            # else:
-            #     mask_logit = (
-            #         torch.zeros((mask_logits.shape[0], n_voxels), dtype=torch.int, device=mask_logits.device) - 1000000
-            #     )
-            #     mask_logit[:, object_idxs] = mask_logits
 
             cls_logits_final.append(cls_logits)
             mask_logits_final.append(mask_logit)

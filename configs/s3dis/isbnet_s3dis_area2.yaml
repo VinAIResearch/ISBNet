@@ -83,5 +83,3 @@ step_epoch: 40
 save_freq: 4
 pretrain: 'pretrains/s3dis/best_pretrain_val_area2.pth'
 work_dir: ''
-
-# best weight: pretrains/best_baseline.pth
