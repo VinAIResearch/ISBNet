@@ -101,7 +101,7 @@ def main():
 
     dataset = build_dataset(cfg.data.test, logger)
     dataloader = build_dataloader(dataset, training=False, dist=False, **cfg.dataloader.test)
-    # results = []
+
     scan_ids, sem_preds, offset_preds, offset_vertices_preds = [], [], [], []
     nmc_clusters = []
     pred_insts, sem_labels, ins_labels = [], [], []
@@ -112,7 +112,7 @@ def main():
     point_eval = PointWiseEval(num_classes=cfg.model.semantic_classes)
     scannet_eval = ScanNetEval(dataset.CLASSES, dataset_name=cfg.data.train.type)
 
-    if cfg.data.train.type == "s3dis":
+    if cfg.data.test.type == "s3dis":
         s3dis_eval = S3DISEval()
 
     with torch.no_grad():
@@ -121,9 +121,9 @@ def main():
             t1 = time.time()
 
             # NOTE avoid OOM during eval s3dis with full resolution
-            if cfg.data.train.type == "s3dis":
+            if cfg.data.test.type == "s3dis":
                 torch.cuda.empty_cache()
-                
+
             with torch.cuda.amp.autocast(enabled=cfg.fp16):
                 res = model(batch)
 
@@ -172,7 +172,6 @@ def main():
             s3dis_eval.evaluate(pred_insts, sem_labels, ins_labels)
 
     mean_time = np.array(time_arr).mean()
-
     logger.info(f"Average run time: {mean_time:.4f}")
 
     # save output
