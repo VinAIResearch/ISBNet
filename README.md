@@ -32,28 +32,28 @@ Details of the model architecture and experimental results can be found in [our 
 
 **Please CITE** our paper whenever this repository is used to help produce published results or incorporated into other software.
 
-## Feature
+## Feature :mega:
 * State of the art performance on ScanNetV2, S3DIS, and STPLS3D.
 * High speed of 237ms per scan on ScanNetV2 dataset.
 * Reproducibility code for both ScanNetV2, S3DIS and STPLS3D datasets.
 
-## Dataset
+## Dataset :floppy_disk:
 
 - [x] ScanNetV2
 - [x] ScanNetV2-200
 - [x] S3DIS
 - [ ] STPLS3D (available soon)
 
-## Installation
+## Installation :memo:
 Please refer to [installation guide](docs/INSTALL.md).
 
-## Data Preparation
+## Data Preparation :hammer:
 Please refer to [data preparation](dataset/README.md).
 
-## Training and Testing
+## Training and Testing :train2:
 Please refer to [training guide](docs/TRAIN.md).
 
-## Quick Demo
+## Quick Demo :fire:
 
 We provide trained models on ScanNetV2 validation set ([GoogleDrive](https://drive.google.com/file/d/1-GQpYlcVRV5r6qDg-Z7_90CIIfu4kmq8/view?usp=sharing)), ScanNetV2-200 validation set ([GoogleDrive](https://drive.google.com/file/d/1ZEZgQeT6dIakljSTx4s5YZM0n2rwC3Kw/view?usp=share_link)) and S3DIS Area 5 validation ([GoogleDrive](https://drive.google.com/file/d/1oup4nEdgsmdwnMP1TQPmoIqZ8c1RoTgA/view?usp=sharing)).
 
@@ -75,8 +75,10 @@ python3 tools/test.py configs/scannet200/isbnet_scannet200.yaml pretrains/scanne
 python3 tools/test.py configs/s3dis/isbnet_s3dis_area5.yaml pretrains/s3dis/best_head_val_area5.pth
 ```
 
-## Acknowledgements
+## Qualitative Results :computer:
+
+## Acknowledgements :clap:
 This repo is built upon [SpConv](https://github.com/traveller59/spconv), [DyCo3D](https://github.com/aim-uofa/DyCo3D), [SSTNet](https://github.com/Gorilla-Lab-SCUT/SSTNet), and [SoftGroup](https://github.com/thangvubk/SoftGroup). 
 
-## Contacts
+## Contacts :email:
 If you have any questions or suggestions about this repo, please feel free to contact me (ductuan.ngo99@gmail.com).
