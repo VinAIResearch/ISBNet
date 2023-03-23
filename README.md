@@ -1,10 +1,13 @@
 ##### Table of contents
-1. [Installation](#Installation)
-2. [Data Preparation](#Data-Preparation)
-3. [Training and Testing](#Training-and-Testing) 
-4. [Quick Demo](#Quick-Demo)
-5. [Acknowledgments](#Acknowledgments)
-6. [Contacts](#Contacts)
+1. [Features](#Features)
+2. [Datasets](#Datasets)
+3. [Installation](#Installation)
+4. [Data Preparation](#Data-Preparation)
+5. [Training and Testing](#Training-and-Testing) 
+6. [Quick Demo](#Quick-Demo)
+7. [Qualitative Results](#Qualitative-Results)
+8. [Acknowledgments](#Acknowledgments)
+9. [Contacts](#Contacts)
 
 # ISBNet: a 3D Point Cloud Instance Segmentation Network with Instance-aware Sampling and Box-aware Dynamic Convolution
 
@@ -68,7 +71,7 @@ python3 tools/test.py configs/scannetv2/isbnet_scannetv2.yaml pretrains/scannetv
 python3 tools/test.py configs/scannet200/isbnet_scannet200.yaml pretrains/scannet200/best_head.pth
 ```
 
-3\) S3DIS Area5 validation:
+3\) S3DIS Area5 validation set:
 
 ```
 python3 tools/test.py configs/s3dis/isbnet_s3dis_area5.yaml pretrains/s3dis/best_head_val_area5.pth
