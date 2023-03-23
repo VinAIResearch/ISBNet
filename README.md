@@ -32,12 +32,12 @@ Details of the model architecture and experimental results can be found in [our 
 
 **Please CITE** our paper whenever this repository is used to help produce published results or incorporated into other software.
 
-## Feature :mega:
+## Features :mega:
 * State of the art performance on ScanNetV2, S3DIS, and STPLS3D.
 * High speed of 237ms per scan on ScanNetV2 dataset.
 * Reproducibility code for both ScanNetV2, S3DIS and STPLS3D datasets.
 
-## Dataset :floppy_disk:
+## Datasets :floppy_disk:
 
 - [x] ScanNetV2
 - [x] ScanNetV2-200
