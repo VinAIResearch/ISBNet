@@ -54,7 +54,6 @@ Please refer to [data preparation](dataset/README.md).
 Please refer to [training guide](docs/TRAIN.md).
 
 ## Quick Demo :fire:
-
 We provide trained models on ScanNetV2 validation set ([GoogleDrive](https://drive.google.com/file/d/1-GQpYlcVRV5r6qDg-Z7_90CIIfu4kmq8/view?usp=sharing)), ScanNetV2-200 validation set ([GoogleDrive](https://drive.google.com/file/d/1ZEZgQeT6dIakljSTx4s5YZM0n2rwC3Kw/view?usp=share_link)) and S3DIS Area 5 validation ([GoogleDrive](https://drive.google.com/file/d/1oup4nEdgsmdwnMP1TQPmoIqZ8c1RoTgA/view?usp=sharing)).
 
 1\) ScanNetV2 validation set:
@@ -76,6 +75,7 @@ python3 tools/test.py configs/s3dis/isbnet_s3dis_area5.yaml pretrains/s3dis/best
 ```
 
 ## Qualitative Results :computer:
+We provide the qualitative results of our method at [here](docs/QUALITATIVE.md)
 
 ## Acknowledgements :clap:
 This repo is built upon [SpConv](https://github.com/traveller59/spconv), [DyCo3D](https://github.com/aim-uofa/DyCo3D), [SSTNet](https://github.com/Gorilla-Lab-SCUT/SSTNet), and [SoftGroup](https://github.com/thangvubk/SoftGroup). 
