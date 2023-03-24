@@ -64,6 +64,9 @@ dist/
 *.tsv
 *.npy
 *.zip
+
+tools/train_slurm.sh
+
 dataset/scannetv2/scans
 dataset/scannetv2/scans_test
 dataset/scannetv2/train
