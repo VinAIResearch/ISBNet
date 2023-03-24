@@ -1,10 +1,13 @@
 ##### Table of contents
-1. [Installation](#Installation)
-2. [Data Preparation](#Data-Preparation)
-3. [Training and Testing](#Training-and-Testing) 
-4. [Quick Demo](#Quick-Demo)
-5. [Acknowledgments](#Acknowledgments)
-6. [Contacts](#Contacts)
+1. [Features](#Features)
+2. [Datasets](#Datasets)
+3. [Installation](#Installation)
+4. [Data Preparation](#Data-Preparation)
+5. [Training and Testing](#Training-and-Testing) 
+6. [Quick Demo](#Quick-Demo)
+7. [Qualitative Results](#Qualitative-Results)
+8. [Acknowledgments](#Acknowledgments)
+9. [Contacts](#Contacts)
 
 # ISBNet: a 3D Point Cloud Instance Segmentation Network with Instance-aware Sampling and Box-aware Dynamic Convolution
 
@@ -32,28 +35,28 @@ Details of the model architecture and experimental results can be found in [our 
 
 **Please CITE** our paper whenever this repository is used to help produce published results or incorporated into other software.
 
-## Feature
-* State-of-the-art performance on ScanNetV2, S3DIS, and STPLS3D.
+## Features :mega:
+* State of the art performance on ScanNetV2, S3DIS, and STPLS3D.
 * High speed of 237ms per scan on ScanNetV2 dataset.
 * Reproducibility code for both ScanNetV2, S3DIS and STPLS3D datasets.
 
-## Dataset
+## Datasets :floppy_disk:
 
 - [x] ScanNetV2
 - [x] ScanNetV2-200
 - [x] S3DIS
 - [ ] STPLS3D (available soon)
 
-## Installation
+## Installation :memo:
 Please refer to [installation guide](docs/INSTALL.md).
 
-## Data Preparation
+## Data Preparation :hammer:
 Please refer to [data preparation](dataset/README.md).
 
-## Training and Testing
+## Training and Testing :train2:
 Please refer to [training guide](docs/TRAIN.md).
 
-## Quick Demo
+## Quick Demo :fire:
 
 ### [ScanNetv2](https://kaldir.vc.in.tum.de/scannet_benchmark/semantic_instance_3d?metric=ap)
 
@@ -93,9 +96,11 @@ python3 tools/test.py configs/scannet200/isbnet_scannet200.yaml pretrains/scanne
 ```
 python3 tools/test.py configs/s3dis/isbnet_s3dis_area5.yaml pretrains/s3dis/best_head_val_area5.pth
 ```
+## Qualitative Results :computer:
+We provide the qualitative results of our method at [here](docs/QUALITATIVE.md)
 
-## Acknowledgements
+## Acknowledgements :clap:
 This repo is built upon [SpConv](https://github.com/traveller59/spconv), [DyCo3D](https://github.com/aim-uofa/DyCo3D), [SSTNet](https://github.com/Gorilla-Lab-SCUT/SSTNet), and [SoftGroup](https://github.com/thangvubk/SoftGroup). 
 
-## Contacts
+## Contacts :email:
 If you have any questions or suggestions about this repo, please feel free to contact me (ductuan.ngo99@gmail.com).
