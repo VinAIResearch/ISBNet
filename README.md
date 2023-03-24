@@ -1,3 +1,10 @@
+[![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/isbnet-a-3d-point-cloud-instance-segmentation/3d-instance-segmentation-on-scannetv2)](https://paperswithcode.com/sota/3d-instance-segmentation-on-scannetv2?p=isbnet-a-3d-point-cloud-instance-segmentation) 
+
+[![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/isbnet-a-3d-point-cloud-instance-segmentation/3d-instance-segmentation-on-s3dis)](https://paperswithcode.com/sota/3d-instance-segmentation-on-s3dis?p=isbnet-a-3d-point-cloud-instance-segmentation)
+
+ [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/isbnet-a-3d-point-cloud-instance-segmentation/3d-instance-segmentation-on-stpls3d)](https://paperswithcode.com/sota/3d-instance-segmentation-on-stpls3d?p=isbnet-a-3d-point-cloud-instance-segmentation)
+
+
 ##### Table of contents
 1. [Features](#Features)
 2. [Datasets](#Datasets)
@@ -62,6 +69,7 @@ Please refer to [training guide](docs/TRAIN.md).
 
 | Dataset | AP | AP_50 | Config | Checkpoint
 |:-:|:-:|:-:|:-:|:-:|
+| ScanNet test | 55.9 | 76.3 | 
 | ScanNet val (paper) | 54.5 | 73.1 |
 | ScanNet val | 56.1 | 72.1 | [config](configs/scannetv2/isbnet_scannetv2.yaml) | [checkpoint](https://drive.google.com/file/d/1-GQpYlcVRV5r6qDg-Z7_90CIIfu4kmq8/view?usp=sharing) 
 
