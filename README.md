@@ -1,13 +1,10 @@
 ##### Table of contents
-1. [Features](#Features)
-2. [Datasets](#Datasets)
-3. [Installation](#Installation)
-4. [Data Preparation](#Data-Preparation)
-5. [Training and Testing](#Training-and-Testing) 
-6. [Quick Demo](#Quick-Demo)
-7. [Qualitative Results](#Qualitative-Results)
-8. [Acknowledgments](#Acknowledgments)
-9. [Contacts](#Contacts)
+1. [Installation](#Installation)
+2. [Data Preparation](#Data-Preparation)
+3. [Training and Testing](#Training-and-Testing) 
+4. [Quick Demo](#Quick-Demo)
+5. [Acknowledgments](#Acknowledgments)
+6. [Contacts](#Contacts)
 
 # ISBNet: a 3D Point Cloud Instance Segmentation Network with Instance-aware Sampling and Box-aware Dynamic Convolution
 
@@ -35,29 +32,49 @@ Details of the model architecture and experimental results can be found in [our 
 
 **Please CITE** our paper whenever this repository is used to help produce published results or incorporated into other software.
 
-## Features :mega:
-* State of the art performance on ScanNetV2, S3DIS, and STPLS3D.
+## Feature
+* State-of-the-art performance on ScanNetV2, S3DIS, and STPLS3D.
 * High speed of 237ms per scan on ScanNetV2 dataset.
 * Reproducibility code for both ScanNetV2, S3DIS and STPLS3D datasets.
 
-## Datasets :floppy_disk:
+## Dataset
 
 - [x] ScanNetV2
 - [x] ScanNetV2-200
 - [x] S3DIS
 - [ ] STPLS3D (available soon)
 
-## Installation :memo:
+## Installation
 Please refer to [installation guide](docs/INSTALL.md).
 
-## Data Preparation :hammer:
+## Data Preparation
 Please refer to [data preparation](dataset/README.md).
 
-## Training and Testing :train2:
+## Training and Testing
 Please refer to [training guide](docs/TRAIN.md).
 
-## Quick Demo :fire:
-We provide trained models on ScanNetV2 validation set ([GoogleDrive](https://drive.google.com/file/d/1-GQpYlcVRV5r6qDg-Z7_90CIIfu4kmq8/view?usp=sharing)), ScanNetV2-200 validation set ([GoogleDrive](https://drive.google.com/file/d/1ZEZgQeT6dIakljSTx4s5YZM0n2rwC3Kw/view?usp=share_link)) and S3DIS Area 5 validation ([GoogleDrive](https://drive.google.com/file/d/1oup4nEdgsmdwnMP1TQPmoIqZ8c1RoTgA/view?usp=sharing)).
+## Quick Demo
+
+### [ScanNet v2](https://kaldir.vc.in.tum.de/scannet_benchmark/semantic_instance_3d?metric=ap)
+
+| Dataset | AP | AP_50 | Config | Checkpoint
+|:-:|:-:|:-:|:-:|:-:|
+| ScanNet val (paper) | 54.5 | 73.1 |
+| ScanNet val | 56.1 | 72.1 | [config](configs/scannetv2/isbnet_scannetv2.yaml) | [checkpoint](https://drive.google.com/file/d/1-GQpYlcVRV5r6qDg-Z7_90CIIfu4kmq8/view?usp=sharing) 
+
+### [ScanNet 200](https://kaldir.vc.in.tum.de/scannet_benchmark/scannet200_semantic_instance_3d)
+
+| Dataset | AP | AP_50 | Config | Checkpoint
+|:-:|:-:|:-:|:-:|:-:|
+| ScanNet200 val | 23.7 | 31.5 | [config](configs/scannet200/isbnet_scannet200.yaml) | [checkpoint](https://drive.google.com/file/d/1ZEZgQeT6dIakljSTx4s5YZM0n2rwC3Kw/view?usp=share_link) 
+
+
+### [S3DIS](http://buildingparser.stanford.edu/dataset.html)
+
+| Dataset | AP | AP_50 | Config | Checkpoint
+|:-:|:-:|:-:|:-:|:-:|
+| Area 5 | 56.3 | 67.5 | [config](configs/s3dis/isbnet_s3dis_area5.yaml) | [checkpoint](https://drive.google.com/file/d/1oup4nEdgsmdwnMP1TQPmoIqZ8c1RoTgA/view?usp=sharing) 
+
 
 1\) ScanNetV2 validation set:
 
@@ -77,11 +94,8 @@ python3 tools/test.py configs/scannet200/isbnet_scannet200.yaml pretrains/scanne
 python3 tools/test.py configs/s3dis/isbnet_s3dis_area5.yaml pretrains/s3dis/best_head_val_area5.pth
 ```
 
-## Qualitative Results :computer:
-We provide the qualitative results of our method at [here](docs/QUALITATIVE.md)
-
-## Acknowledgements :clap:
+## Acknowledgements
 This repo is built upon [SpConv](https://github.com/traveller59/spconv), [DyCo3D](https://github.com/aim-uofa/DyCo3D), [SSTNet](https://github.com/Gorilla-Lab-SCUT/SSTNet), and [SoftGroup](https://github.com/thangvubk/SoftGroup). 
 
-## Contacts :email:
+## Contacts
 If you have any questions or suggestions about this repo, please feel free to contact me (ductuan.ngo99@gmail.com).
