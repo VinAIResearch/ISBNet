@@ -55,14 +55,14 @@ Please refer to [training guide](docs/TRAIN.md).
 
 ## Quick Demo
 
-### [ScanNet v2](https://kaldir.vc.in.tum.de/scannet_benchmark/semantic_instance_3d?metric=ap)
+### [ScanNetv2](https://kaldir.vc.in.tum.de/scannet_benchmark/semantic_instance_3d?metric=ap)
 
 | Dataset | AP | AP_50 | Config | Checkpoint
 |:-:|:-:|:-:|:-:|:-:|
 | ScanNet val (paper) | 54.5 | 73.1 |
 | ScanNet val | 56.1 | 72.1 | [config](configs/scannetv2/isbnet_scannetv2.yaml) | [checkpoint](https://drive.google.com/file/d/1-GQpYlcVRV5r6qDg-Z7_90CIIfu4kmq8/view?usp=sharing) 
 
-### [ScanNet 200](https://kaldir.vc.in.tum.de/scannet_benchmark/scannet200_semantic_instance_3d)
+### [ScanNetv2-200](https://kaldir.vc.in.tum.de/scannet_benchmark/scannet200_semantic_instance_3d)
 
 | Dataset | AP | AP_50 | Config | Checkpoint
 |:-:|:-:|:-:|:-:|:-:|
