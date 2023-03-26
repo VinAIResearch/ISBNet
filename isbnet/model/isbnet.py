@@ -558,6 +558,9 @@ class ISBNet(nn.Module):
             conf_logits_final.append(conf_logits)
             box_preds_final.append(box_preds)
 
+            if i == len(n_sample_arr) - 1:
+                break
+
             mask_logits_0 = (mask_logit[:, query_inds1[0].long()].detach() > 0).float()
             union_mask = union_mask + mask_logits_0.sum(dim=0)
 
