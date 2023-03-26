@@ -32,7 +32,6 @@ class S3DISDataset(CustomDataset):
         filenames_all = []
         for p in self.prefix:
             filenames = glob(osp.join(self.data_root, "preprocess", p + "*" + self.suffix))
-            # filenames = glob(osp.join(self.data_root, 's3dis_box2mask', p, '*'+ '.normals.instance.npy'))
             assert len(filenames) > 0, f"Empty {p}"
             filenames_all.extend(filenames)
 
@@ -47,8 +46,8 @@ class S3DISDataset(CustomDataset):
         spp_filename = osp.join(self.data_root, "superpoints", scan_id + ".pth")
         spp = torch.load(spp_filename)
 
+        N = xyz.shape[0]
         if self.training:
-            N = xyz.shape[0]
             inds = np.random.choice(N, int(N * 0.25), replace=False)
             xyz = xyz[inds]
             rgb = rgb[inds]
@@ -59,6 +58,7 @@ class S3DISDataset(CustomDataset):
             semantic_label = semantic_label[inds]
             instance_label = self.getCroppedInstLabel(instance_label, inds)
         elif N > 5000000: # NOTE Avoid OOM
+            print(f'Downsample scene {scan_id} with original num_points: {N}')
             inds = np.arange(N)[::4]
             
             xyz = xyz[inds]

@@ -595,7 +595,6 @@ class ScanNetEval(object):
         col1 = ":"
         lineLen = 48
 
-        print()
         print("#" * lineLen)
         line = ""
         line += "{:<15}".format("what") + sep + col1

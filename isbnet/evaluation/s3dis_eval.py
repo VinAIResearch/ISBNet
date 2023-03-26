@@ -220,5 +220,6 @@ class S3DISEval(object):
         print(f"mMWCov: {mMWCov}")
         print(f"mPrecision: {mPrec}")
         print(f"mRecall: {mRec}")
+        print()
 
         return mMUCov, mMWCov, mPrec, mRec
