@@ -184,7 +184,7 @@ class ISBNet(nn.Module):
         self.bias_nums = bias_nums
         self.num_gen_params = sum(weight_nums) + sum(bias_nums)
 
-        # convolution before the condinst take place (convolution num before the generated parameters take place)
+        # NOTE convolution before the condinst take place (convolution num before the generated parameters take place)
         inst_mask_head = [
             conv_block(self.instance_head_cfg.dec_dim, self.instance_head_cfg.dec_dim),
             conv_block(self.instance_head_cfg.dec_dim, self.instance_head_cfg.dec_dim),
@@ -663,7 +663,6 @@ class ISBNet(nn.Module):
             output = self.output_layer(output)
 
             outs.append(output.features)
-            # idxs.append(output.indices[:, 0])
         outs = torch.cat(outs, dim=0)
         idxs = torch.zeros((outs.shape[0]), dtype=torch.int, device=outs.device)
         return outs, idxs
@@ -678,7 +677,6 @@ class ISBNet(nn.Module):
             box_conf = self.box_conf_linear(output_feats).squeeze(-1)
             return semantic_scores, centroid_offset, corners_offset, box_conf
 
-    # @force_fp32(apply_to=("voxel_coords_float", "voxel_output_feats", "voxel_box_preds"))
     def spp_pool(self, voxel_coords_float, voxel_output_feats, voxel_box_preds, voxel_spps, voxel_batch_offsets):
         spp_batch_offsets = [0]
         for b in range(len(voxel_batch_offsets) - 1):
@@ -693,10 +691,6 @@ class ISBNet(nn.Module):
         spp_output_feats = custom_scatter_mean(voxel_output_feats, voxel_spps, pool=self.use_spp_pool)
 
         return spp_coords_float, spp_output_feats, spp_box_preds, spp_batch_offsets
-
-    # @force_fp32(apply_to=("input_feats"))
-    # def scatter_mean_fp32(self, input_feats, indices, dim=0):
-    #     return scatter_mean(input_feats, indices.long, dim=dim)
 
     def forward_head(
         self, queries_features, queries_locs, mask_features_, locs_float_, box_preds_, batch_offsets_, inference=False
@@ -748,7 +742,7 @@ class ISBNet(nn.Module):
             queries_locs_b = queries_locs[b]
             queries_box_preds_b = queries_box_preds[b]
 
-            # NOTE as # of points in s3dis is very, we split dyco into multiple chunks to avoid OOM
+            # NOTE as # of points in s3dis is very big, we split dyco into multiple chunks to avoid OOM
             if not self.training and self.dataset_name == "s3dis":
                 num_chunks = 16
                 chunk_size = math.ceil(n_queries / num_chunks)
@@ -826,7 +820,7 @@ class ISBNet(nn.Module):
                 x = torch.einsum("qab,qan->qbn", w, x) + b.unsqueeze(-1)
                 x = F.relu(x)
             else:
-                x = torch.einsum("qab,qan->qbn", w, x)
+                x = torch.einsum("qab,qan->qbn", w, x) # NOTE Empirically, we do not add biases in last dynamic_conv layer
                 x = x.squeeze(1)
 
         return x
@@ -850,7 +844,7 @@ class ISBNet(nn.Module):
 
         instances = []
 
-        # NOTE for S3DIS: it requires instance mask of bg classes
+        # NOTE for S3DIS: it requires instance mask of background classes (floor, ceil)
         for i in self.sem2ins_classes:
             mask_pred = semantic_scores_preds == i
 
@@ -916,11 +910,12 @@ class ISBNet(nn.Module):
         cls_final = cls_final[valid_masks_final_after_spp]
         boxes_final = boxes_final[valid_masks_final_after_spp]
 
-        # NOTE save mask
+        # NOTE save results
         scores_final = scores_final.cpu().numpy()
         cls_final = cls_final.cpu().numpy()
         boxes_final = boxes_final.cpu().numpy()
 
+        # NOTE rle encode mask to save memory
         rle_masks = rle_encode_gpu_batch(masks_final)
 
         for i in range(cls_final.shape[0]):
@@ -940,10 +935,8 @@ class ISBNet(nn.Module):
 
             pred["conf"] = scores_final[i]
 
-            # rle encode mask to save memory
             pred["pred_mask"] = rle_masks[i]
 
-            # NOTE box
             instances.append(pred)
 
         return instances
