@@ -81,7 +81,7 @@ fp16: False
 epochs: 80
 step_epoch: 30
 save_freq: 4
-pretrain: 'pretrains/scannetv2/pretrain_scannetv2_val.pth' # We can load pretrain of ScanNetV2 or train from scratch
+pretrain: '' # We can load pretrain of ScanNetV2 or train from scratch
 work_dir: ''
 
 # best weight: pretrains/best_baseline.pth
