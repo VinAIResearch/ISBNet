@@ -1,6 +1,6 @@
 model:
-  channels: 32
-  num_blocks: 5
+  channels: 16
+  num_blocks: 7
   semantic_classes: 20
   instance_classes: 18
   sem2ins_classes: []
@@ -13,7 +13,7 @@ model:
   filter_bg_thresh: 0.1
   iterative_sampling: True
   instance_head_cfg:
-    dec_dim: 128
+    dec_dim: 64
     n_sample_pa1: 2048
     n_queries: 256
     radius_scale: 1
@@ -57,8 +57,8 @@ data:
 
 dataloader:
   train:
-    batch_size: 12
-    num_workers: 12
+    batch_size: 16
+    num_workers: 16
   test:
     batch_size: 1
     num_workers: 1
@@ -80,7 +80,7 @@ fp16: False
 epochs: 128
 step_epoch: 50
 save_freq: 4
-pretrain: 'pretrains/scannetv2/best_pretrain_lightweight.pth'
+pretrain: 'pretrains/scannetv2/pretrain_lightweight_m16_scannetv2_val.pth'
 work_dir: ''
 
 # best weight: pretrains/best_baseline.pth

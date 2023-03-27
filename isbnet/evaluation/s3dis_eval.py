@@ -65,7 +65,7 @@ class S3DISEval(object):
         pred_confs = np.array(pred_confs)
         sorted_inds = np.argsort(pred_confs)  # ascendent
         for i, s_id in enumerate(sorted_inds):
-            point_ids = (pred_masks[s_id] == 1)
+            point_ids = pred_masks[s_id] == 1
             pred_ins[point_ids] = i + 1
             pred_sem[point_ids] = pred_labels[s_id] - 1
 

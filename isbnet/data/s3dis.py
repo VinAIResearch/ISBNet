@@ -57,10 +57,10 @@ class S3DISDataset(CustomDataset):
 
             semantic_label = semantic_label[inds]
             instance_label = self.getCroppedInstLabel(instance_label, inds)
-        elif N > 5000000: # NOTE Avoid OOM
-            print(f'Downsample scene {scan_id} with original num_points: {N}')
+        elif N > 5000000:  # NOTE Avoid OOM
+            print(f"Downsample scene {scan_id} with original num_points: {N}")
             inds = np.arange(N)[::4]
-            
+
             xyz = xyz[inds]
             rgb = rgb[inds]
             spp = spp[inds]

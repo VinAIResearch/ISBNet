@@ -81,5 +81,5 @@ fp16: False
 epochs: 120
 step_epoch: 40
 save_freq: 4
-pretrain: 'pretrains/s3dis/best_pretrain_val_area5.pth'
+pretrain: 'pretrains/s3dis/pretrain_s3dis_area5.pth'
 work_dir: ''

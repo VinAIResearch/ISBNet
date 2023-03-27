@@ -57,7 +57,7 @@ data:
 
 dataloader:
   train:
-    batch_size: 16
+    batch_size: 32
     num_workers: 16
   test:
     batch_size: 1
@@ -76,9 +76,9 @@ save_cfg:
   nmc_clusters: False
   object_conditions: False
 
-fp16: False
+fp16: True
 epochs: 120
 step_epoch: 40
 save_freq: 4
-pretrain: 'pretrains/stpls3d/best_pretrain.pth'
+pretrain: 'pretrains/stpls3d/pretrain_stpls3d_val.pth'
 work_dir: ''

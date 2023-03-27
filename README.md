@@ -52,7 +52,7 @@ Details of the model architecture and experimental results can be found in [our 
 - [x] ScanNetV2
 - [x] ScanNetV2-200
 - [x] S3DIS
-- [ ] STPLS3D (available soon)
+- [x] STPLS3D
 
 ## Installation :memo:
 Please refer to [installation guide](docs/INSTALL.md).
@@ -86,23 +86,17 @@ Please refer to [training guide](docs/TRAIN.md).
 |:-:|:-:|:-:|:-:|:-:|
 | Area 5 | 56.3 | 67.5 | [config](configs/s3dis/isbnet_s3dis_area5.yaml) | [checkpoint](https://drive.google.com/file/d/1oup4nEdgsmdwnMP1TQPmoIqZ8c1RoTgA/view?usp=sharing) 
 
+### [STPLS3D](https://www.stpls3d.com/)
 
-1\) ScanNetV2 validation set:
+| Dataset | AP | AP_50 | Config | Checkpoint
+|:-:|:-:|:-:|:-:|:-:|
+| STPLS3D val | 49.3 | 64.0 | [config](configs/stpls3d/isbnet_stpls3d.yaml) | [checkpoint](https://drive.google.com/file/d/1EhPsl4003Y9HEycdFP0nYpoleEpQ2faJ/view?usp=share_link) 
 
-```
-python3 tools/test.py configs/scannetv2/isbnet_scannetv2.yaml pretrains/scannetv2/best_head.pth
-```
 
-2\) ScanNetV2-200 validation set:
-
-```
-python3 tools/test.py configs/scannet200/isbnet_scannet200.yaml pretrains/scannet200/best_head.pth
-```
-
-3\) S3DIS Area5 validation set:
+Run evaluation with pre-trained models:
 
 ```
-python3 tools/test.py configs/s3dis/isbnet_s3dis_area5.yaml pretrains/s3dis/best_head_val_area5.pth
+python3 tools/test.py <path_to_config_file> <path_to_pretrain_weight>
 ```
 ## Qualitative Results :computer:
 We provide the qualitative results of our method at [here](docs/QUALITATIVE.md)

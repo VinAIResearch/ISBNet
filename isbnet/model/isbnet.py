@@ -330,7 +330,7 @@ class ISBNet(nn.Module):
 
         # NOTE Dynamic conv
         if self.use_spp_pool:
-            dc_coords_float, dc_box_preds, dc_output_feats, dc_batch_offsets = self.spp_pool(
+            dc_coords_float, dc_output_feats, dc_box_preds, dc_batch_offsets = self.spp_pool(
                 voxel_coords_float, voxel_output_feats, voxel_box_preds, voxel_spps, voxel_batch_offsets
             )
 
@@ -346,11 +346,11 @@ class ISBNet(nn.Module):
             )
 
         else:
-            idxs_subsample = random_downsample(voxel_batch_offsets, batch_size, n_subsample=15000)
-            dc_coords_float = voxel_coords_float[idxs_subsample]
-            dc_box_preds = voxel_box_preds[idxs_subsample]
-            dc_output_feats = voxel_output_feats[idxs_subsample]
-            dc_batch_offsets = get_batch_offsets(voxel_batch_idxs[idxs_subsample], batch_size)
+            idxs_subsample = random_downsample(voxel_batch_offsets_, batch_size, n_subsample=15000)
+            dc_coords_float = voxel_coords_float_[idxs_subsample]
+            dc_box_preds = voxel_box_preds_[idxs_subsample]
+            dc_output_feats = voxel_output_feats_[idxs_subsample]
+            dc_batch_offsets = get_batch_offsets(voxel_batch_idxs_[idxs_subsample], batch_size)
 
             subsample_idxs = object_idxs[idxs_subsample]
             dc_inst_mask_arr = get_subsample_gt(
@@ -478,8 +478,10 @@ class ISBNet(nn.Module):
         voxel_box_preds_ = voxel_box_preds[object_idxs]
         voxel_batch_offsets_ = get_batch_offsets(voxel_batch_idxs_, batch_size)
 
-        voxel_spps = torch.unique(voxel_spps, return_inverse=True)[1]
-        dc_coords_float, dc_box_preds, dc_output_feats, dc_batch_offsets = self.spp_pool(
+        voxel_spps_ = voxel_spps[object_idxs]
+        voxel_spps_ = torch.unique(voxel_spps_, return_inverse=True)[1]
+
+        dc_coords_float, dc_output_feats, dc_box_preds, dc_batch_offsets = self.spp_pool(
             voxel_coords_float, voxel_output_feats, voxel_box_preds, voxel_spps, voxel_batch_offsets
         )
 
@@ -561,7 +563,7 @@ class ISBNet(nn.Module):
             if i == len(n_sample_arr) - 1:
                 break
 
-            mask_logits_0 = (mask_logit[:, query_inds1[0].long()].detach() > 0).float()
+            mask_logits_0 = (mask_logits[:, voxel_spps_][:, query_inds1[0].long()].detach() > 0).float()
             union_mask = union_mask + mask_logits_0.sum(dim=0)
 
             nonvisited_query_inds1 = torch.nonzero(union_mask == 0).view(-1)
@@ -690,7 +692,7 @@ class ISBNet(nn.Module):
         spp_box_preds = custom_scatter_mean(voxel_box_preds, voxel_spps, pool=self.use_spp_pool)
         spp_output_feats = custom_scatter_mean(voxel_output_feats, voxel_spps, pool=self.use_spp_pool)
 
-        return spp_coords_float, spp_box_preds, spp_output_feats, spp_batch_offsets
+        return spp_coords_float, spp_output_feats, spp_box_preds, spp_batch_offsets
 
     # @force_fp32(apply_to=("input_feats"))
     # def scatter_mean_fp32(self, input_feats, indices, dim=0):

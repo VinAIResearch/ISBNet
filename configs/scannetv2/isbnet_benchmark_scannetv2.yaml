@@ -80,5 +80,5 @@ fp16: False
 epochs: 128
 step_epoch: 50
 save_freq: 4
-pretrain: 'pretrains/trainval/best_pretrain_trainval.pth'
+pretrain: 'pretrains/trainval/pretrain_scannetv2_benchmark.pth'
 work_dir: ''
