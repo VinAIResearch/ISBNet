@@ -1,0 +1,86 @@
+model:
+  channels: 32
+  num_blocks: 7
+  semantic_classes: 200
+  instance_classes: 198
+  sem2ins_classes: []
+  semantic_only: False
+  semantic_weight: False
+  with_coords: True
+  ignore_label: -100
+  voxel_scale: 50
+  use_spp_pool: True
+  filter_bg_thresh: 0.1
+  iterative_sampling: True
+  instance_head_cfg:
+    dec_dim: 128
+    n_sample_pa1: 2048
+    n_queries: 256
+    radius_scale: 1
+    radius: 0.4
+    neighbor: 32
+  test_cfg:
+    x4_split: False
+    logit_thresh: 0.0
+    score_thresh: 0.2
+    npoint_thresh: 100
+    type_nms: 'matrix'
+    topk: 100
+
+  fixed_modules: ['input_conv', 'unet', 'output_layer', 'semantic_linear', 'offset_linear', 'offset_vertices_linear', 'box_conf_linear']
+
+data:
+  train:
+    type: 'scannet200'
+    data_root: 'dataset/scannet200'
+    prefix: 'trainval'
+    suffix: '_inst_nostuff.pth'
+    training: True
+    repeat: 4
+    voxel_cfg:
+      scale: 50
+      spatial_shape: [128, 512]
+      max_npoint: 250000
+      min_npoint: 5000
+  test:
+    type: 'scannet200'
+    data_root: 'dataset/scannet200'
+    prefix: 'val'
+    suffix: '_inst_nostuff.pth'
+    training: False
+    voxel_cfg:
+      scale: 50
+      spatial_shape: [128, 512]
+      max_npoint: 250000
+      min_npoint: 5000
+
+
+dataloader:
+  train:
+    batch_size: 12
+    num_workers: 12
+  test:
+    batch_size: 1
+    num_workers: 1
+
+optimizer:
+  type: 'AdamW'
+  lr: 0.001
+  weight_decay: 0.0001
+
+save_cfg:
+  semantic: False
+  offset: False
+  instance: True
+  offset_vertices: False
+  nmc_clusters: False
+  object_conditions: False
+
+fp16: False
+epochs: 120
+step_epoch: 50
+save_freq: 4
+pretrain: 'pretrains/scannet200/head_scannetv2_200_val.pth'
+work_dir: ''
+
+# best weight: pretrains/best_baseline.pth
