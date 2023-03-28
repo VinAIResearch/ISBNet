@@ -1,8 +1,10 @@
 [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/isbnet-a-3d-point-cloud-instance-segmentation/3d-instance-segmentation-on-scannetv2)](https://paperswithcode.com/sota/3d-instance-segmentation-on-scannetv2?p=isbnet-a-3d-point-cloud-instance-segmentation) 
 
+[![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/isbnet-a-3d-point-cloud-instance-segmentation/3d-instance-segmentation-on-scannet200)](https://paperswithcode.com/sota/3d-instance-segmentation-on-scannet200?p=isbnet-a-3d-point-cloud-instance-segmentation)
+
 [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/isbnet-a-3d-point-cloud-instance-segmentation/3d-instance-segmentation-on-s3dis)](https://paperswithcode.com/sota/3d-instance-segmentation-on-s3dis?p=isbnet-a-3d-point-cloud-instance-segmentation)
 
- [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/isbnet-a-3d-point-cloud-instance-segmentation/3d-instance-segmentation-on-stpls3d)](https://paperswithcode.com/sota/3d-instance-segmentation-on-stpls3d?p=isbnet-a-3d-point-cloud-instance-segmentation)
+[![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/isbnet-a-3d-point-cloud-instance-segmentation/3d-instance-segmentation-on-stpls3d)](https://paperswithcode.com/sota/3d-instance-segmentation-on-stpls3d?p=isbnet-a-3d-point-cloud-instance-segmentation)
 
 
 ##### Table of contents
