@@ -31,7 +31,7 @@ model:
 
 data:
   train:
-    type: 'scannetv2'
+    type: 'scannet200'
     data_root: 'dataset/scannet200'
     prefix: 'train'
     suffix: '_inst_nostuff.pth'
@@ -43,7 +43,7 @@ data:
       max_npoint: 250000
       min_npoint: 5000
   test:
-    type: 'scannetv2'
+    type: 'scannet200'
     data_root: 'dataset/scannet200'
     prefix: 'val'
     suffix: '_inst_nostuff.pth'
