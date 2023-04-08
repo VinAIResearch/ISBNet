@@ -14,7 +14,7 @@
 4. [Data Preparation](#Data-Preparation)
 5. [Training and Testing](#Training-and-Testing) 
 6. [Quick Demo](#Quick-Demo)
-7. [Qualitative Results](#Qualitative-Results)
+7. [Visualization](#Qualitative-Results)
 8. [Acknowledgments](#Acknowledgments)
 9. [Contacts](#Contacts)
 
