@@ -101,7 +101,8 @@ Run evaluation with pre-trained models:
 ```
 python3 tools/test.py <path_to_config_file> <path_to_pretrain_weight>
 ```
-## Qualitative Results :computer:
+## Visualization :computer:
+Please refer to [visualization guide](visualization/README.md).
 We provide the qualitative results of our method at [here](docs/QUALITATIVE.md)
 
 ## Acknowledgements :clap:
