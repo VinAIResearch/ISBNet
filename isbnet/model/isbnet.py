@@ -19,6 +19,7 @@ from .model_utils import (
     nms,
     random_downsample,
     superpoint_align,
+    get_cropped_instance_label,
 )
 
 
@@ -237,7 +238,8 @@ class ISBNet(nn.Module):
         # NOTE voxelization
         voxel_semantic_labels = semantic_labels[p2v_map[:, 1].long()]
         voxel_instance_labels = instance_labels[p2v_map[:, 1].long()]
-        voxel_instance_labels = torch.unique(voxel_instance_labels, return_inverse=True)[1]
+        voxel_instance_labels = get_cropped_instance_label(voxel_instance_labels)
+
         voxel_spps = spps[p2v_map[:, 1].long()]
         voxel_spps = torch.unique(voxel_spps, return_inverse=True)[1]
 
