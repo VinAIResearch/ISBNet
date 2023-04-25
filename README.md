@@ -14,7 +14,7 @@
 4. [Data Preparation](#Data-Preparation)
 5. [Training and Testing](#Training-and-Testing) 
 6. [Quick Demo](#Quick-Demo)
-7. [Qualitative Results](#Qualitative-Results)
+7. [Visualization](#Qualitative-Results)
 8. [Acknowledgments](#Acknowledgments)
 9. [Contacts](#Contacts)
 
@@ -101,7 +101,8 @@ Run evaluation with pre-trained models:
 ```
 python3 tools/test.py <path_to_config_file> <path_to_pretrain_weight>
 ```
-## Qualitative Results :computer:
+## Visualization :computer:
+Please refer to [visualization guide](visualization/README.md).
 We provide the qualitative results of our method at [here](docs/QUALITATIVE.md)
 
 ## Acknowledgements :clap:
