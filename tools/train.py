@@ -70,9 +70,10 @@ def train(epoch, model, optimizer, scheduler, scaler, train_loader, cfg, logger,
 
         # meter_dict
         for k, v in log_vars.items():
-            if k not in meter_dict.keys() and k != "placeholder":
-                meter_dict[k] = AverageMeter()
-            meter_dict[k].update(v)
+            if k != "placeholder":
+                if k not in meter_dict.keys():
+                    meter_dict[k] = AverageMeter()
+                meter_dict[k].update(v)
 
         # backward
         optimizer.zero_grad()

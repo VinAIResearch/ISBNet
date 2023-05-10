@@ -75,6 +75,8 @@ dataset/scannetv2/test
 dataset/scannetv2/val_gt
 dataset/scannetv2/scannetv2-labels.combined.tsv
 dataset/scannetv2/superpoints
+dataset/scannetv2/normals
+dataset/scannetv2/scans_organized
 
 dataset/scannet200/train
 dataset/scannet200/val
@@ -89,6 +91,8 @@ dataset/s3dis/superpoints
 dataset/stpls3d/train
 dataset/stpls3d/val
 dataset/stpls3d/Synthetic_v3_InstanceSegmentation
+
+dataset/semantic_kitti/sequences
 
 work_dirs/
 pretrains/
