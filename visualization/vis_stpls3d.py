@@ -3,6 +3,7 @@ import pyviz3d.visualizer as viz
 import torch
 import os.path as osp
 import argparse
+import os 
 
 COLOR_DETECTRON2 = (
     np.array(
@@ -224,20 +225,22 @@ COLOR_DETECTRON2 = (
     * 255
 )
 
-CLASS_LABELS_S3DIS = (
-        "ceiling",
-        "floor",
-        "wall",
-        "beam",
-        "column",
-        "window",
-        "door",
-        "chair",
-        "table",
-        "bookcase",
-        "sofa",
-        "board",
-        "clutter",)
+CLASS_LABELS_STPLS3D = (
+    "background",
+    "building",
+    "low vegetation",
+    "med. vegetation",
+    "high vegetation",
+    "vehicle",
+    "truck",
+    "aircraft",
+    "militaryVehicle",
+    "bike",
+    "motorcycle",
+    "light pole",
+    "street sign",
+    "clutter",
+    "fence",)
 
 COLOR_MAP = {
     0: (0., 0., 0.),
@@ -281,22 +284,8 @@ COLOR_MAP = {
     40: (100., 85., 144.),
 }
 
-SEMANTIC_IDX2NAME = {
-    0: "unannotated",
-    1: "ceiling",
-    2: "floor",
-    3: "wall",
-    4: "beam",
-    5: "column",
-    6: "window",
-    7: "door",
-    8: "chair",
-    9: "table",
-    10: "bookcase",
-    11: "sofa",
-    12: "board",
-    13: "clutter",
-}
+SEMANTIC_IDX2NAME = {k: v for k,v in enumerate(CLASS_LABELS_STPLS3D)}
+
 
 def get_pred_color(scene_name, mask_valid, dir):
     instance_file = osp.join(dir, "pred_instance", scene_name + ".txt")
@@ -325,7 +314,7 @@ def get_pred_color(scene_name, mask_valid, dir):
         mask = np.loadtxt(mask_path).astype(np.int)
         mask = mask[mask_valid]
 
-        cls = SEMANTIC_IDX2NAME[int(masks[i][1])-1]
+        cls = SEMANTIC_IDX2NAME[int(masks[i][1])]
 
         print("{} {}: {} pointnum: {}".format(i, masks[i], cls, mask.sum()))
         ins_pointnum[i] = mask.sum()
@@ -340,12 +329,13 @@ def get_pred_color(scene_name, mask_valid, dir):
 
 
 def main():
-    parser = argparse.ArgumentParser("S3DIS-Vis")
+    parser = argparse.ArgumentParser("STPLS3D-Vis")
 
-    parser.add_argument("--data_root", type=str, default='dataset/s3dis')
-    parser.add_argument("--scene_name", type=str, default='Area_5_office_30')
-    parser.add_argument("--split", type=str, default='preprocess')
-    parser.add_argument("--prediction_path", help="path to the prediction results", default="results/s3dis_area5_hardfilter_spp")
+    parser.add_argument("--data_root", type=str, default='dataset/stpls3d')
+    parser.add_argument("--scene_name", type=str, default='5_points_GTv3_00')
+    parser.add_argument("--split", type=str, default='val')
+    parser.add_argument("--prediction_path", help="path to the prediction results", 
+                        default="results/isbnet_stpls3d_val")
     parser.add_argument("--point_size", type=float, default=15.0)
     parser.add_argument(
         "--task",
@@ -368,27 +358,7 @@ def main():
     semantic_label = semantic_label.astype(np.int)
     instance_label = instance_label.astype(np.int)
 
-    # NOTE split 4 to match with the order of model's prediction
-    inds = np.arange(xyz.shape[0])
-
-    xyz_list = []
-    rgb_list = []
-    semantic_label_list = []
-    instance_label_list = []
-    for i in range(4):
-        piece = inds[i::4]
-        semantic_label_list.append(semantic_label[piece])
-        instance_label_list.append(instance_label[piece])
-        xyz_list.append(xyz[piece])
-        rgb_list.append(rgb[piece])
-
-    xyz = np.concatenate(xyz_list, 0)
-    rgb = np.concatenate(rgb_list, 0)
-    semantic_label = np.concatenate(semantic_label_list, 0)
-    instance_label = np.concatenate(instance_label_list, 0)
-    
-    xyz = xyz - np.min(xyz, axis=0)
-    rgb = (rgb+1) * 255.0
+    rgb = (rgb + 1.0) * 127.5
 
     mask_valid = (semantic_label != -100)
     xyz = xyz[mask_valid]
@@ -421,7 +391,8 @@ def main():
         v.add_points(f'inst_gt', xyz, inst_label_rgb, point_size=args.point_size)
 
     if 'superpoint' in vis_tasks:
-        spp = torch.load(f'{args.data_root}/superpoints/{args.scene_name}.pth')
+        # NOTE currently STPLS3D does not have superpoint
+        spp = np.arange((mask_valid.shape[0]), dtype=np.long)
         spp = spp[mask_valid]
         superpoint_rgb = np.zeros_like(rgb)
         unique_spp = np.unique(spp)
