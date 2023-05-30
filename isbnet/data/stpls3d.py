@@ -34,7 +34,7 @@ class STPLS3DDataset(CustomDataset):
 
     def load(self, filename):
         if self.prefix == "test":
-            xyz, rgb = self.load(filename)
+            xyz, rgb = torch.load(filename)
             semantic_label = np.zeros(xyz.shape[0], dtype=np.long)
             instance_label = np.zeros(xyz.shape[0], dtype=np.long)
         else:
