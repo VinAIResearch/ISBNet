@@ -231,7 +231,7 @@ CLASS_LABELS_20 = ('wall', 'floor', 'cabinet', 'bed', 'chair', 'sofa', 'table', 
                    'bookshelf', 'picture', 'counter', 'desk', 'curtain', 'refrigerator',
                    'shower curtain', 'toilet', 'sink', 'bathtub', 'otherfurniture')
 
-SCANNET_COLOR_MAP_20 = {
+COLOR_MAP = {
     0: (0., 0., 0.),
     1: (174., 199., 232.),
     2: (152., 223., 138.),
@@ -388,7 +388,7 @@ def main():
             if sem == -100:
                 continue
             remap_sem_id = reverse_map[sem]
-            color_ = SCANNET_COLOR_MAP_20[remap_sem_id]
+            color_ = COLOR_MAP[remap_sem_id]
             sem_label_rgb[semantic_label == sem] = color_
 
         v.add_points(f'sem_gt', xyz, sem_label_rgb, point_size=args.point_size)
