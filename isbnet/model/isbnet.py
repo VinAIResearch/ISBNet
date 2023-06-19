@@ -864,19 +864,44 @@ class ISBNet(nn.Module):
             pred["pred_mask"] = rle_encode_gpu(mask_pred)
             instances.append(pred)
 
-        cls_logits = F.softmax(cls_logits, dim=-1)
-        cls_pred = torch.argmax(cls_logits, dim=-1)  # n_mask
+            # cls_logits = F.softmax(cls_logits, dim=-1)
+            # cls_pred = torch.argmax(cls_logits, dim=-1)  # n_mask
+            # conf_logits = torch.clamp(conf_logits, 0.0, 1.0)
+            # masks_pred = mask_logits >= logit_thresh
+
+            # cls_logits_scores = torch.gather(cls_logits, 1, cls_pred.unsqueeze(-1)).squeeze(-1)
+            # scores = torch.sqrt(conf_logits * cls_logits_scores)
+
+            # scores_cond = (conf_logits > score_thresh) & (cls_logits_scores > score_thresh)
+            # cls_final = cls_pred[scores_cond]
+            # masks_final = masks_pred[scores_cond]
+            # scores_final = scores[scores_cond]
+            # boxes_final = box_preds[scores_cond]
+
+            # proposals_npoints = torch.sum(masks_final, dim=1)
+            # npoints_cond = proposals_npoints >= npoint_thresh
+            # cls_final = cls_final[npoints_cond]
+            # masks_final = masks_final[npoints_cond]
+            # scores_final = scores_final[npoints_cond]
+            # boxes_final = boxes_final[npoints_cond]
+
+        cls_logits = F.softmax(cls_logits, dim=-1)[:, :-1]
         conf_logits = torch.clamp(conf_logits, 0.0, 1.0)
-        masks_pred = mask_logits >= logit_thresh
+        cls_scores = torch.sqrt(cls_logits * conf_logits[:, None])
+        mask_preds = mask_logits >= logit_thresh
 
-        cls_logits_scores = torch.gather(cls_logits, 1, cls_pred.unsqueeze(-1)).squeeze(-1)
-        scores = torch.sqrt(conf_logits * cls_logits_scores)
+        cls_scores_flatten = cls_scores.reshape(-1) # n_cls * n_queries
+        labels = torch.arange(
+            self.instance_classes, device=cls_scores.device).unsqueeze(0).repeat(mask_preds.shape[0], 1).flatten(0, 1)
 
-        scores_cond = (conf_logits > score_thresh) & (cls_logits_scores > score_thresh)
-        cls_final = cls_pred[scores_cond]
-        masks_final = masks_pred[scores_cond]
-        scores_final = scores[scores_cond]
-        boxes_final = box_preds[scores_cond]
+        # idx = torch.nonzero(cls_scores_flatten >= score_thresh).view(-1)
+        _, idx = torch.topk(cls_scores_flatten, k=300, largest=True)
+        mask_idx = torch.div(idx, self.instance_classes, rounding_mode='floor')
+
+        cls_final = labels[idx]
+        scores_final = cls_scores_flatten[idx]
+        masks_final = mask_preds[mask_idx]
+        boxes_final = box_preds[mask_idx]
 
         proposals_npoints = torch.sum(masks_final, dim=1)
         npoints_cond = proposals_npoints >= npoint_thresh
