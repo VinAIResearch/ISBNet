@@ -331,52 +331,37 @@ class ISBNet(nn.Module):
         # -------------------------------
 
         # NOTE Dynamic conv
-        # if self.use_spp_pool:
-        dc_coords_float_p, dc_output_feats_p, dc_box_preds_p, dc_batch_offsets_p = self.spp_pool(
-            voxel_coords_float, voxel_output_feats, voxel_box_preds, voxel_spps, voxel_batch_offsets
-        )
-        dc_mask_features_p = self.mask_tower(torch.unsqueeze(dc_output_feats_p, dim=2).permute(2, 1, 0)).permute(
-            2, 1, 0
-        )
-
-        # NOTE Get GT and loss
-        dc_inst_mask_arr_p = get_spp_gt(
-            voxel_instance_labels,
-            voxel_spps,
-            instance_cls,
-            instance_box,
-            voxel_batch_offsets,
-            batch_size,
-            pool=self.use_spp_pool,
-        )
-
-        cls_logits_p, mask_logits_p, conf_logits_p, box_preds_p = self.forward_head(
-            query_feats, query_locs, dc_mask_features_p, dc_coords_float_p, dc_box_preds_p, dc_batch_offsets_p
-        )
-        model_outputs.update(
-            dict(
-                dc_inst_mask_arr_p=dc_inst_mask_arr_p,
-                dc_batch_offsets_p=dc_batch_offsets_p,
-                cls_logits_p=cls_logits_p,
-                mask_logits_p=mask_logits_p,
-                conf_logits_p=conf_logits_p,
-                box_preds_p=box_preds_p,
+        if self.use_spp_pool:
+            dc_coords_float, dc_output_feats, dc_box_preds, dc_batch_offsets = self.spp_pool(
+                voxel_coords_float, voxel_output_feats, voxel_box_preds, voxel_spps, voxel_batch_offsets
             )
-        )
-        # -------------------------------
 
-        # else:
-        idxs_subsample = random_downsample(voxel_batch_offsets_, batch_size, n_subsample=10000)
-        dc_coords_float = voxel_coords_float_[idxs_subsample]
-        dc_box_preds = voxel_box_preds_[idxs_subsample]
-        dc_output_feats = voxel_output_feats_[idxs_subsample]
-        dc_batch_offsets = get_batch_offsets(voxel_batch_idxs_[idxs_subsample], batch_size)
-        subsample_idxs = object_idxs[idxs_subsample]
+            # NOTE Get GT and loss
+            dc_inst_mask_arr = get_spp_gt(
+                voxel_instance_labels,
+                voxel_spps,
+                instance_cls,
+                instance_box,
+                voxel_batch_offsets,
+                batch_size,
+                pool=self.use_spp_pool,
+            )
+
+        else:
+            idxs_subsample = random_downsample(voxel_batch_offsets_, batch_size, n_subsample=15000)
+            dc_coords_float = voxel_coords_float_[idxs_subsample]
+            dc_box_preds = voxel_box_preds_[idxs_subsample]
+            dc_output_feats = voxel_output_feats_[idxs_subsample]
+            dc_batch_offsets = get_batch_offsets(voxel_batch_idxs_[idxs_subsample], batch_size)
+
+            subsample_idxs = object_idxs[idxs_subsample]
+            dc_inst_mask_arr = get_subsample_gt(
+                voxel_instance_labels, subsample_idxs, instance_cls, instance_box, dc_batch_offsets, batch_size
+            )
+
         dc_mask_features = self.mask_tower(torch.unsqueeze(dc_output_feats, dim=2).permute(2, 1, 0)).permute(2, 1, 0)
 
-        dc_inst_mask_arr = get_subsample_gt(
-            voxel_instance_labels, subsample_idxs, instance_cls, instance_box, dc_batch_offsets, batch_size
-        )
+        # -------------------------------
 
         cls_logits, mask_logits, conf_logits, box_preds = self.forward_head(
             query_feats, query_locs, dc_mask_features, dc_coords_float, dc_box_preds, dc_batch_offsets
