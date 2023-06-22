@@ -73,7 +73,7 @@ Please refer to [training guide](docs/TRAIN.md).
 |:-:|:-:|:-:|:-:|:-:|
 | ScanNet test | 55.9 | 76.3 | 
 | ScanNet val (paper) | 54.5 | 73.1 |
-| ScanNet val | 56.1 | 72.1 | [config](configs/scannetv2/isbnet_scannetv2.yaml) | [checkpoint](https://drive.google.com/file/d/1-GQpYlcVRV5r6qDg-Z7_90CIIfu4kmq8/view?usp=share_link) 
+| ScanNet val | 56.2 | 72.6 | [config](configs/scannetv2/isbnet_scannetv2.yaml) | [checkpoint](https://drive.google.com/file/d/1-GQpYlcVRV5r6qDg-Z7_90CIIfu4kmq8/view?usp=share_link) 
 | ScanNet val (lightweight) | 50.1 | 68.9 | [config](configs/scannetv2/isbnet_lightweight_scannetv2.yaml) | [checkpoint](https://drive.google.com/file/d/1MOp2dq1KrJiTQxeLSbvTZX60CiUvAqcK/view?usp=share_link) 
 
 ### [ScanNetv2-200](https://kaldir.vc.in.tum.de/scannet_benchmark/scannet200_semantic_instance_3d)
