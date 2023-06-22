@@ -13,13 +13,13 @@ from .blocks import MLP, GenericMLP, ResidualBlock, UBlock, conv_with_kaiming_un
 from .model_utils import (
     custom_scatter_mean,
     get_batch_offsets,
+    get_cropped_instance_label,
     get_instance_info,
     get_spp_gt,
     get_subsample_gt,
     nms,
     random_downsample,
     superpoint_align,
-    get_cropped_instance_label,
 )
 
 
@@ -330,14 +330,14 @@ class ISBNet(nn.Module):
         )
         # -------------------------------
 
-
         # NOTE Dynamic conv
         # if self.use_spp_pool:
         dc_coords_float_p, dc_output_feats_p, dc_box_preds_p, dc_batch_offsets_p = self.spp_pool(
             voxel_coords_float, voxel_output_feats, voxel_box_preds, voxel_spps, voxel_batch_offsets
         )
-        dc_mask_features_p = self.mask_tower(torch.unsqueeze(dc_output_feats_p, dim=2).permute(2, 1, 0)).permute(2, 1, 0)
-
+        dc_mask_features_p = self.mask_tower(torch.unsqueeze(dc_output_feats_p, dim=2).permute(2, 1, 0)).permute(
+            2, 1, 0
+        )
 
         # NOTE Get GT and loss
         dc_inst_mask_arr_p = get_spp_gt(
@@ -377,8 +377,6 @@ class ISBNet(nn.Module):
         dc_inst_mask_arr = get_subsample_gt(
             voxel_instance_labels, subsample_idxs, instance_cls, instance_box, dc_batch_offsets, batch_size
         )
-
-        
 
         cls_logits, mask_logits, conf_logits, box_preds = self.forward_head(
             query_feats, query_locs, dc_mask_features, dc_coords_float, dc_box_preds, dc_batch_offsets
@@ -836,7 +834,9 @@ class ISBNet(nn.Module):
                 x = torch.einsum("qab,qan->qbn", w, x) + b.unsqueeze(-1)
                 x = F.relu(x)
             else:
-                x = torch.einsum("qab,qan->qbn", w, x) # NOTE Empirically, we do not add biases in last dynamic_conv layer
+                x = torch.einsum(
+                    "qab,qan->qbn", w, x
+                )  # NOTE Empirically, we do not add biases in last dynamic_conv layer
                 x = x.squeeze(1)
 
         return x
@@ -878,39 +878,22 @@ class ISBNet(nn.Module):
             pred["pred_mask"] = rle_encode_gpu(mask_pred)
             instances.append(pred)
 
-            # cls_logits = F.softmax(cls_logits, dim=-1)
-            # cls_pred = torch.argmax(cls_logits, dim=-1)  # n_mask
-            # conf_logits = torch.clamp(conf_logits, 0.0, 1.0)
-            # masks_pred = mask_logits >= logit_thresh
-
-            # cls_logits_scores = torch.gather(cls_logits, 1, cls_pred.unsqueeze(-1)).squeeze(-1)
-            # scores = torch.sqrt(conf_logits * cls_logits_scores)
-
-            # scores_cond = (conf_logits > score_thresh) & (cls_logits_scores > score_thresh)
-            # cls_final = cls_pred[scores_cond]
-            # masks_final = masks_pred[scores_cond]
-            # scores_final = scores[scores_cond]
-            # boxes_final = box_preds[scores_cond]
-
-            # proposals_npoints = torch.sum(masks_final, dim=1)
-            # npoints_cond = proposals_npoints >= npoint_thresh
-            # cls_final = cls_final[npoints_cond]
-            # masks_final = masks_final[npoints_cond]
-            # scores_final = scores_final[npoints_cond]
-            # boxes_final = boxes_final[npoints_cond]
-
         cls_logits = F.softmax(cls_logits, dim=-1)[:, :-1]
         conf_logits = torch.clamp(conf_logits, 0.0, 1.0)
         cls_scores = torch.sqrt(cls_logits * conf_logits[:, None])
         mask_preds = mask_logits >= logit_thresh
 
-        cls_scores_flatten = cls_scores.reshape(-1) # n_cls * n_queries
-        labels = torch.arange(
-            self.instance_classes, device=cls_scores.device).unsqueeze(0).repeat(mask_preds.shape[0], 1).flatten(0, 1)
+        cls_scores_flatten = cls_scores.reshape(-1)  # n_cls * n_queries
+        labels = (
+            torch.arange(self.instance_classes, device=cls_scores.device)
+            .unsqueeze(0)
+            .repeat(mask_preds.shape[0], 1)
+            .flatten(0, 1)
+        )
 
         # idx = torch.nonzero(cls_scores_flatten >= score_thresh).view(-1)
         _, idx = torch.topk(cls_scores_flatten, k=min(300, len(cls_scores_flatten)), largest=True)
-        mask_idx = torch.div(idx, self.instance_classes, rounding_mode='floor')
+        mask_idx = torch.div(idx, self.instance_classes, rounding_mode="floor")
 
         cls_final = labels[idx]
         scores_final = cls_scores_flatten[idx]
