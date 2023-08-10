@@ -12,6 +12,7 @@ model:
   use_spp_pool: False
   filter_bg_thresh: 0.1
   iterative_sampling: False
+  mask_dim_out: 16
   instance_head_cfg:
     dec_dim: 64
     n_sample_pa1: 2048
@@ -78,7 +79,7 @@ save_cfg:
 
 fp16: True
 epochs: 120
-step_epoch: 40
+step_epoch: 50
 save_freq: 4
 pretrain: 'pretrains/stpls3d/pretrain_stpls3d_val.pth'
 work_dir: ''

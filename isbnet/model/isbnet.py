@@ -13,13 +13,13 @@ from .blocks import MLP, GenericMLP, ResidualBlock, UBlock, conv_with_kaiming_un
 from .model_utils import (
     custom_scatter_mean,
     get_batch_offsets,
+    get_cropped_instance_label,
     get_instance_info,
     get_spp_gt,
     get_subsample_gt,
     nms,
     random_downsample,
     superpoint_align,
-    get_cropped_instance_label,
 )
 
 
@@ -45,6 +45,7 @@ class ISBNet(nn.Module):
         use_spp_pool=True,
         filter_bg_thresh=0.1,
         iterative_sampling=True,
+        mask_dim_out=32,
     ):
         super().__init__()
         self.channels = channels
@@ -73,6 +74,8 @@ class ISBNet(nn.Module):
 
         # NOTE iterative sampling
         self.iterative_sampling = iterative_sampling
+
+        self.mask_dim_out = mask_dim_out
 
         in_channels = 6 if with_coords else 3
 
@@ -168,8 +171,6 @@ class ISBNet(nn.Module):
     def init_dyco(self):
         conv_block = conv_with_kaiming_uniform("BN", activation=True)
 
-        self.mask_dim_out = 32
-
         mask_tower = [
             conv_block(self.channels, self.channels),
             conv_block(self.channels, self.channels),
@@ -178,8 +179,8 @@ class ISBNet(nn.Module):
         ]
         self.add_module("mask_tower", nn.Sequential(*mask_tower))
 
-        weight_nums = [(self.mask_dim_out + 3 + 3) * self.mask_dim_out, self.mask_dim_out * 1]
-        bias_nums = [self.mask_dim_out, 1]
+        weight_nums = [(self.mask_dim_out + 3 + 3) * self.mask_dim_out, self.mask_dim_out * (self.mask_dim_out//2), (self.mask_dim_out//2) * 1]
+        bias_nums = [self.mask_dim_out, (self.mask_dim_out//2), 1]
 
         self.weight_nums = weight_nums
         self.bias_nums = bias_nums
@@ -361,6 +362,8 @@ class ISBNet(nn.Module):
 
         dc_mask_features = self.mask_tower(torch.unsqueeze(dc_output_feats, dim=2).permute(2, 1, 0)).permute(2, 1, 0)
 
+        # -------------------------------
+
         cls_logits, mask_logits, conf_logits, box_preds = self.forward_head(
             query_feats, query_locs, dc_mask_features, dc_coords_float, dc_box_preds, dc_batch_offsets
         )
@@ -521,12 +524,7 @@ class ISBNet(nn.Module):
         union_mask = torch.zeros_like(query_inds1[0])
 
         if self.iterative_sampling:
-            n_sample = min(max(150, int(len(object_idxs) / 300)), 500)
-            n_sample_arr = [
-                int(-(n_sample / 2) * math.log(0.1)),
-                int(-(n_sample / 2) * math.log(0.2)),
-                int(-(n_sample / 2) * math.log(0.4)),
-            ]
+            n_sample_arr = [192, 128, 64]
         else:
             n_sample_arr = [256]
 
@@ -792,8 +790,10 @@ class ISBNet(nn.Module):
 
         weight_splits[0] = weight_splits[0].reshape(num_instances, out_channels + 6, out_channels)
         bias_splits[0] = bias_splits[0].reshape(num_instances, out_channels)
-        weight_splits[1] = weight_splits[1].reshape(num_instances, out_channels, 1)
-        bias_splits[1] = bias_splits[1].reshape(num_instances, 1)
+        weight_splits[1] = weight_splits[1].reshape(num_instances, out_channels, out_channels // 2)
+        bias_splits[1] = bias_splits[1].reshape(num_instances, out_channels // 2)
+        weight_splits[2] = weight_splits[2].reshape(num_instances, out_channels // 2, 1)
+        bias_splits[2] = bias_splits[2].reshape(num_instances, 1)
 
         return weight_splits, bias_splits  # LIST OF [n_queries, C_in, C_out]
 
@@ -822,7 +822,9 @@ class ISBNet(nn.Module):
                 x = torch.einsum("qab,qan->qbn", w, x) + b.unsqueeze(-1)
                 x = F.relu(x)
             else:
-                x = torch.einsum("qab,qan->qbn", w, x) # NOTE Empirically, we do not add biases in last dynamic_conv layer
+                x = torch.einsum(
+                    "qab,qan->qbn", w, x
+                )  # NOTE Empirically, we do not add biases in last dynamic_conv layer
                 x = x.squeeze(1)
 
         return x
@@ -864,19 +866,27 @@ class ISBNet(nn.Module):
             pred["pred_mask"] = rle_encode_gpu(mask_pred)
             instances.append(pred)
 
-        cls_logits = F.softmax(cls_logits, dim=-1)
-        cls_pred = torch.argmax(cls_logits, dim=-1)  # n_mask
+        cls_logits = F.softmax(cls_logits, dim=-1)[:, :-1]
         conf_logits = torch.clamp(conf_logits, 0.0, 1.0)
-        masks_pred = mask_logits >= logit_thresh
+        cls_scores = torch.sqrt(cls_logits * conf_logits[:, None])
+        mask_preds = mask_logits >= logit_thresh
 
-        cls_logits_scores = torch.gather(cls_logits, 1, cls_pred.unsqueeze(-1)).squeeze(-1)
-        scores = torch.sqrt(conf_logits * cls_logits_scores)
+        cls_scores_flatten = cls_scores.reshape(-1)  # n_cls * n_queries
+        labels = (
+            torch.arange(self.instance_classes, device=cls_scores.device)
+            .unsqueeze(0)
+            .repeat(mask_preds.shape[0], 1)
+            .flatten(0, 1)
+        )
 
-        scores_cond = (conf_logits > score_thresh) & (cls_logits_scores > score_thresh)
-        cls_final = cls_pred[scores_cond]
-        masks_final = masks_pred[scores_cond]
-        scores_final = scores[scores_cond]
-        boxes_final = box_preds[scores_cond]
+        # idx = torch.nonzero(cls_scores_flatten >= score_thresh).view(-1)
+        _, idx = torch.topk(cls_scores_flatten, k=min(300, len(cls_scores_flatten)), largest=True)
+        mask_idx = torch.div(idx, self.instance_classes, rounding_mode="floor")
+
+        cls_final = labels[idx]
+        scores_final = cls_scores_flatten[idx]
+        masks_final = mask_preds[mask_idx]
+        boxes_final = box_preds[mask_idx]
 
         proposals_npoints = torch.sum(masks_final, dim=1)
         npoints_cond = proposals_npoints >= npoint_thresh
