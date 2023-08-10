@@ -310,7 +310,7 @@ def get_pred_color(scene_name, mask_valid, dir):
     # FIXME
     ins_num = len(masks)
     ins_pointnum = np.zeros(ins_num)
-    inst_label = -100 * np.ones(mask_valid.sum()).astype(np.int)
+    inst_label = -100 * np.ones(mask_valid.sum()).astype(np.int32)
 
     # sort score such that high score has high priority for visualization
     scores = np.array([float(x[-1]) for x in masks])
@@ -323,7 +323,7 @@ def get_pred_color(scene_name, mask_valid, dir):
         if float(masks[i][2]) < 0.1:
             continue
 
-        mask = np.loadtxt(mask_path).astype(np.int)
+        mask = np.loadtxt(mask_path).astype(np.int32)
         mask = mask[mask_valid]
 
         cls = SEMANTIC_IDX2NAME[int(masks[i][1])]
@@ -347,8 +347,8 @@ def main():
     parser.add_argument("--scene_name", type=str, default='scene0011_00')
     parser.add_argument("--split", type=str, default='val')
     parser.add_argument("--prediction_path", help="path to the prediction results", 
-                        default="results/isbnet_scannetv2_val")
-    parser.add_argument("--point_size", type=float, default=15.0)
+                        default="results/benchmark_ori_topk300")
+    parser.add_argument("--point_size", type=float, default=30.0)
     parser.add_argument(
         "--task",
         help="all/input/sem_gt/inst_gt/superpoint/inst_pred",
@@ -360,15 +360,21 @@ def main():
     v = viz.Visualizer()
 
     if args.task == 'all':
-        vis_tasks = ['input', 'sem_gt', 'inst_gt', 'superpoint' 'inst_pred']
+        vis_tasks = ['input', 'sem_gt', 'inst_gt', 'superpoint' 'inst_pred', 'superpoint']
     else:
         vis_tasks = [args.task]
 
-    xyz, rgb, semantic_label, instance_label = torch.load(f'{args.data_root}/{args.split}/{args.scene_name}_inst_nostuff.pth')
+    try:
+        xyz, rgb, semantic_label, instance_label = torch.load(f'{args.data_root}/{args.split}/{args.scene_name}_inst_nostuff.pth')
+    except:
+        xyz, rgb = torch.load(f'{args.data_root}/{args.split}/{args.scene_name}_inst_nostuff.pth')
+        semantic_label = np.ones(xyz.shape[0], dtype=np.int32)
+        instance_label = np.ones(xyz.shape[0], dtype=np.int32)
+
     xyz = xyz.astype(np.float32)
     rgb = rgb.astype(np.float32)
-    semantic_label = semantic_label.astype(np.int)
-    instance_label = instance_label.astype(np.int)
+    semantic_label = semantic_label.astype(np.int32)
+    instance_label = instance_label.astype(np.int32)
 
     rgb = (rgb + 1.0) * 127.5
 
