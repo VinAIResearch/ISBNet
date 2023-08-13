@@ -87,7 +87,7 @@ Please refer to [training guide](docs/TRAIN.md).
 
 | Dataset | AP | AP_50 | Config | Checkpoint
 |:-:|:-:|:-:|:-:|:-:|
-| Area 5 | 56.3 | 67.5 | [config](configs/s3dis/isbnet_s3dis_area5.yaml) | [checkpoint](https://drive.google.com/file/d/1oup4nEdgsmdwnMP1TQPmoIqZ8c1RoTgA/view?usp=share_link) 
+| Area 5 | 56.3 | 67.5 | [config](configs/s3dis/isbnet_s3dis_area5.yaml) | [checkpoint](https://drive.google.com/file/d/1Bs0wAS3Bpdx6PqA-9Jay_XssgUhkQ3oC/view?usp=drive_link) 
 
 ### [STPLS3D](https://www.stpls3d.com/)
 
