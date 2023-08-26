@@ -188,8 +188,8 @@ class ISBNet(nn.Module):
             weight_nums = [(self.mask_dim_out + 3 + 3) * self.mask_dim_out, self.mask_dim_out * (self.mask_dim_out//2), (self.mask_dim_out//2) * 1]
             bias_nums = [self.mask_dim_out, (self.mask_dim_out//2), 1]
         else:
-            weight_nums = [(self.mask_dim_out + 3 + 3) * (self.mask_dim_out//2), (self.mask_dim_out//2) * 1]
-            bias_nums = [(self.mask_dim_out//2), 1]
+            weight_nums = [(self.mask_dim_out + 3 + 3) * self.mask_dim_out, self.mask_dim_out * 1]
+            bias_nums = [self.mask_dim_out, 1]
 
         self.weight_nums = weight_nums
         self.bias_nums = bias_nums
@@ -805,9 +805,9 @@ class ISBNet(nn.Module):
             weight_splits[2] = weight_splits[2].reshape(num_instances, out_channels // 2, 1)
             bias_splits[2] = bias_splits[2].reshape(num_instances, 1)
         else:
-            weight_splits[0] = weight_splits[0].reshape(num_instances, out_channels + 6, out_channels // 2)
-            bias_splits[0] = bias_splits[0].reshape(num_instances, out_channels // 2)
-            weight_splits[1] = weight_splits[1].reshape(num_instances, out_channels // 2, 1)
+            weight_splits[0] = weight_splits[0].reshape(num_instances, out_channels + 6, out_channels)
+            bias_splits[0] = bias_splits[0].reshape(num_instances, out_channels)
+            weight_splits[1] = weight_splits[1].reshape(num_instances, out_channels, 1)
             bias_splits[1] = bias_splits[1].reshape(num_instances, 1)
 
         return weight_splits, bias_splits  # LIST OF [n_queries, C_in, C_out]
