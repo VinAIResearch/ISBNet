@@ -12,8 +12,9 @@ model:
   use_spp_pool: False
   filter_bg_thresh: 0.1
   iterative_sampling: False
-  mask_dim_out: 16
+  mask_dim_out: 32
   instance_head_cfg:
+    num_dyco_layer: 2
     dec_dim: 64
     n_sample_pa1: 2048
     n_queries: 256

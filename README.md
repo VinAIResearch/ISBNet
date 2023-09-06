@@ -93,7 +93,7 @@ Please refer to [training guide](docs/TRAIN.md).
 
 | Dataset | AP | AP_50 | Config | Checkpoint
 |:-:|:-:|:-:|:-:|:-:|
-| STPLS3D val | 49.3 | 64.0 | [config](configs/stpls3d/isbnet_stpls3d.yaml) | [checkpoint](https://drive.google.com/file/d/1EhPsl4003Y9HEycdFP0nYpoleEpQ2faJ/view?usp=share_link) 
+| STPLS3D val | 51.2 | 66.7 | [config](configs/stpls3d/isbnet_stpls3d.yaml) | [checkpoint](https://drive.google.com/file/d/1Y02qyblW5UhzOnAc5YZIjjNRvtXXwc_M/view?usp=sharing) 
 
 
 Run evaluation with pre-trained models:
