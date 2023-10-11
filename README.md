@@ -29,6 +29,7 @@ VinAI Research, Vietnam
 
 > **Abstract**: 
 Existing 3D instance segmentation methods are predominant by a bottom-up design: a manually fine-tuned algorithm to group points into clusters followed by a refinement network. Relying on the quality of the clusters, these methods generate susceptible results when (1) nearby objects with the same semantic class are packed together, or (2) large objects with complex shapes. To address these shortcomings, we introduce ISBNet, a novel cluster-free method that represents instances as kernels and decodes instance masks via dynamic convolution. To efficiently generate a high-recall and discriminative kernel set, we propose a simple strategy, named Instance-aware Farthest Point Sampling, to sample candidates and leverage the point aggregation layer adopted from PointNet++ to encode candidate features. Moreover, we show that training 3D instance segmentation in a multi-task learning setting with an additional axis-aligned bounding box prediction head further boosts performance. Our method set new state-of-the-art results on ScanNetV2 (55.9), S3DIS (60.8), and STPLS3D (49.2) in terms of AP and retains fast inference time (237ms per scene on ScanNetV2).
+
 ![overview](docs/isbnet_arch.png)
 
 Details of the model architecture and experimental results can be found in [our paper](https://arxiv.org/abs/2303.00246v2):
@@ -80,7 +81,7 @@ Please refer to [training guide](docs/TRAIN.md).
 
 | Dataset | AP | AP_50 | Config | Checkpoint
 |:-:|:-:|:-:|:-:|:-:|
-| ScanNet200 val | 23.7 | 31.5 | [config](configs/scannet200/isbnet_scannet200.yaml) | [checkpoint](https://drive.google.com/file/d/1ZEZgQeT6dIakljSTx4s5YZM0n2rwC3Kw/view?usp=share_link) 
+| ScanNet200 val | 24.5 | 32.7 | [config](configs/scannet200/isbnet_scannet200.yaml) | [checkpoint](https://drive.google.com/file/d/1ZEZgQeT6dIakljSTx4s5YZM0n2rwC3Kw/view?usp=share_link) 
 
 
 ### [S3DIS](http://buildingparser.stanford.edu/dataset.html)
