@@ -186,7 +186,9 @@ class CustomDataset(Dataset):
         semantic_label = torch.from_numpy(semantic_label)
         instance_label = torch.from_numpy(instance_label)
 
-        spp = torch.from_numpy(spp)
+        if isinstance(spp, np.ndarray):
+            spp = torch.from_numpy(spp)
+            
         spp = torch.unique(spp, return_inverse=True)[1]
 
         return (
