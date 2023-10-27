@@ -13,6 +13,7 @@ model:
   filter_bg_thresh: 0.4
   iterative_sampling: True
   instance_head_cfg:
+    num_dyco_layer: 3
     dec_dim: 128
     n_sample_pa1: 2048
     n_queries: 256
@@ -78,8 +79,8 @@ save_cfg:
   object_conditions: False
 
 fp16: False
-epochs: 120
+epochs: 100
 step_epoch: 40
 save_freq: 4
-pretrain: 'pretrains/s3dis/pretrain_s3dis_area4.pth'
+pretrain: 'pretrains/s3dis/best_pretrain_val_area4.pth'
 work_dir: ''
