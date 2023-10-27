@@ -13,7 +13,7 @@ sys.path.append(".")
 
 parser = configargparse.ArgumentParser()
 parser.add_argument(
-    "--data_dir", type=str, default="./data/Stanford3dDataset_v1.2_Aligned_Version/", help="Path to the original data"
+    "--data_dir", type=str, default="./Stanford3dDataset_v1.2", help="Path to the original data"
 )
 
 S3DIS_SEMANTICS_COLORS = np.array(
@@ -80,7 +80,12 @@ def get_labels(scene_name, scene_data, data_dir):
                 class_name = "clutter"
         semantic_id = NAME2ID[class_name]
         # Load instance point cloud
-        instance_data = np.loadtxt(pth)
+        try:
+            instance_data = np.loadtxt(pth)
+        except:
+            breakpoint()
+            # print(pth)
+            # quit()
         instance_pts = instance_data[:, :3]
         # instance_colors = instance_data[:, 3:]
         # Find corresponding indices in the scene points
@@ -123,22 +128,29 @@ def read_scene_txt(name, data_dir):
 
 def preprocess_s3dis(data_dir):
     scene_list = []
-    for i in range(1, 7):
+    # for i in range(1, 7):
+    for i in [4]:
         area = data_dir + "/Area_" + str(i)
         tmp = glob.glob(area + "/*")
+        # print(area)
         for scene_name in tmp:
             scene_name = scene_name.split("/")[-2] + "." + scene_name.split("/")[-1]
+            if 'alignmentAngle' in scene_name: continue
             scene_list.append(scene_name)
 
     scene_list = natsort.natsorted(scene_list)
 
+    print(scene_list)
+
+
+    save_dir = "./preprocess_notalign"
+    os.makedirs(save_dir, exist_ok=True)
     for scene_name in scene_list:
         area = scene_name.split(".")[0]
         name = scene_name.split(".")[1]
-        save_dir = "dataset/s3dis/preprocess"
-        scene_pth = os.path.join(save_dir, f"{area}_{name}_inst_nostuff")
+        scene_pth = os.path.join(save_dir, f"{area}_{name}_inst_nostuff.pth")
 
-        os.makedirs(save_dir, exist_ok=True)
+        # if os.path.exists(scene_pth): continue
 
         scene_data = read_scene_txt(scene_name, data_dir)
         instances, semantics = get_labels(scene_name, scene_data, data_dir)
@@ -146,7 +158,7 @@ def preprocess_s3dis(data_dir):
         torch.save(
             (
                 scene_data[:, :3].astype(np.float32),
-                scene_data[:, 3:6].astype(np.float32),
+                scene_data[:, 3:6].astype(np.float32)/255.0 - 1.0,
                 semantics.reshape(-1).astype(np.int32),
                 instances.reshape(-1).astype(np.int32),
             ),

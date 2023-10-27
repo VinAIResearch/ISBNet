@@ -69,6 +69,26 @@ def rle_encode_gpu_batch(masks):
     return rles
 
 
+# def rle_decode(rle):
+#     """Decode rle to get binary mask.
+
+#     Args:
+#         rle (dict): rle of encoded mask
+#     Returns:
+#         mask (np.ndarray): decoded mask
+#     """
+#     length = rle["length"]
+#     s = rle["counts"]
+
+#     breakpoint()
+#     starts, nums = [np.asarray(x, dtype=np.int32) for x in (s[0:][::2], s[1:][::2])]
+#     starts -= 1
+#     ends = starts + nums
+#     mask = np.zeros(length, dtype=np.uint8)
+#     for lo, hi in zip(starts, ends):
+#         mask[lo:hi] = 1
+#     return mask
+
 def rle_decode(rle):
     """Decode rle to get binary mask.
 
@@ -77,9 +97,11 @@ def rle_decode(rle):
     Returns:
         mask (np.ndarray): decoded mask
     """
-    length = rle["length"]
-    s = rle["counts"]
-
+    length = rle['length']
+    counts = rle['counts']
+    # print(counts)
+    # s = counts.split()
+    s = counts
     starts, nums = [np.asarray(x, dtype=np.int32) for x in (s[0:][::2], s[1:][::2])]
     starts -= 1
     ends = starts + nums

@@ -31,7 +31,7 @@ class S3DISDataset(CustomDataset):
             self.prefix = [self.prefix]
         filenames_all = []
         for p in self.prefix:
-            filenames = glob(osp.join(self.data_root, "preprocess", p + "*" + self.suffix))
+            filenames = glob(osp.join(self.data_root, "preprocess_notalign", p + "*" + self.suffix))
             assert len(filenames) > 0, f"Empty {p}"
             filenames_all.extend(filenames)
 
@@ -43,7 +43,7 @@ class S3DISDataset(CustomDataset):
 
         xyz, rgb, semantic_label, instance_label = torch.load(filename)
 
-        spp_filename = osp.join(self.data_root, "superpoints", scan_id + ".pth")
+        spp_filename = osp.join(self.data_root, "superpoints_notalign", scan_id + ".pth")
         spp = torch.load(spp_filename)
 
         N = xyz.shape[0]

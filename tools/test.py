@@ -15,6 +15,7 @@ from isbnet.evaluation import PointWiseEval, S3DISEval, ScanNetEval
 from isbnet.model import ISBNet
 from isbnet.util import get_root_logger, init_dist, load_checkpoint, rle_decode
 
+torch.set_warn_always(False)
 
 def get_args():
     parser = argparse.ArgumentParser("ISBNet")

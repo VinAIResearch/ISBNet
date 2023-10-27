@@ -736,3 +736,32 @@ def get_spp_gt(
         )
 
     return spp_inst_mask_arr
+
+
+def merge_4_parts(x):
+    """Helper function for s3dis: take output of 4 parts and merge them."""
+    inds = torch.arange(x.size(0), device=x.device)
+    p1 = inds[::4]
+    p2 = inds[1::4]
+    p3 = inds[2::4]
+    p4 = inds[3::4]
+    ps = [p1, p2, p3, p4]
+    x_split = torch.split(x, [p.size(0) for p in ps])
+    x_new = torch.zeros_like(x)
+    for i, p in enumerate(ps):
+        x_new[p] = x_split[i]
+    return x_new
+
+def merge_4_parts_np(x):
+    """Helper function for s3dis: take output of 4 parts and merge them."""
+    inds = np.arange(x.size(0))
+    p1 = inds[::4]
+    p2 = inds[1::4]
+    p3 = inds[2::4]
+    p4 = inds[3::4]
+    ps = [p1, p2, p3, p4]
+    x_split = torch.split(x, [p.size(0) for p in ps])
+    x_new = torch.zeros_like(x)
+    for i, p in enumerate(ps):
+        x_new[p] = x_split[i]
+    return x_new

@@ -24,6 +24,7 @@ class CustomDataset(Dataset):
         self.logger = logger
         self.mode = "train" if training else "test"
         self.filenames = self.get_filenames()
+        # self.filenames = self.filenames[:10]
 
         self.logger.info(f"Load {self.mode} dataset: {len(self.filenames)} scans")
 

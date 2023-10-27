@@ -3,11 +3,12 @@ import torch
 import torch.distributed as dist
 import torch.nn as nn
 import torch.nn.functional as F
-
+import os
+import numpy as np
 import functools
 import math
 from ..ops import voxelization
-from ..util import cuda_cast, rle_encode_gpu, rle_encode_gpu_batch
+from ..util import cuda_cast, rle_encode_gpu, rle_encode_gpu_batch, rle_decode
 from .aggregator import LocalAggregator
 from .blocks import MLP, GenericMLP, ResidualBlock, UBlock, conv_with_kaiming_uniform
 from .model_utils import (
@@ -599,6 +600,7 @@ class ISBNet(nn.Module):
         box_preds_final = torch.cat(box_preds_final)
 
         pred_instances = self.get_instance(
+            coords_float,
             scan_ids[0],
             cls_logits_final,
             mask_logits_final,
@@ -613,6 +615,58 @@ class ISBNet(nn.Module):
         )
 
         ret.update(dict(pred_instances=pred_instances))
+
+        if False:
+            # masks = masks_final.cpu().numpy().T
+
+            inds = np.arange(coords_float.shape[0])
+
+            p1 = inds[::4]
+            p2 = inds[1::4]
+            p3 = inds[2::4]
+            p4 = inds[3::4]
+            ps = [p1, p2, p3, p4]
+            # breakpoint()
+            len_arr = [len(p) for p in ps]
+            p12 = len_arr[0] + len_arr[1]
+            p123 = p12 + len_arr[2]
+
+            
+
+            # masks = masks3.T
+
+            # torch.save(
+            #     {'ins': masks,
+            #      'conf': scores_final
+            #     },
+            #     os.path.join('./results/s3dis_area4_cls_agnostic', scan_id + '.pth')
+            # )
+
+            result = []
+            confidence = []
+            for ind in range (len(ret['pred_instances'])):
+                scan_id = ret['pred_instances'][ind]['scan_id']
+                conf = ret['pred_instances'][ind]['conf']
+                mask = np.array(rle_decode(ret['pred_instances'][ind]['pred_mask']))
+
+                masks_split = [mask[:len_arr[0]], mask[len_arr[0]:p12], mask[p12:p123], mask[p123:]]
+
+                mask3 = np.zeros_like(mask)
+                for i, p in enumerate(ps):
+                    mask3[p] = masks_split[i]
+                mask = mask3
+
+                confidence.append(conf)
+                result.append(mask)
+            # dic = {'ins': np.array(result), 'conf': np.array(confidence)}
+            
+            # _,_,_,_,_, fps_ind = torch.load(
+            #     os.path.join('/home/tdngo/Workspace/3dis_ws/ISBNet/dataset/s3dis/preprocess_notalign_subsample', scan_id + '_inst_nostuff.pth')
+            # )
+
+            # result = [m[fps_ind] for m in result]
+            torch.save({'ins': np.array(result), 'conf': np.array(confidence)}, os.path.join('./results/s3dis_area4_cls_agnostic', scan_id + '.pth'))
+
         return ret
 
     def forward_backbone(
@@ -843,9 +897,28 @@ class ISBNet(nn.Module):
                 x = x.squeeze(1)
 
         return x
+    
+    def merge_4_parts(self, x):
+        """Helper function for s3dis: take output of 4 parts and merge them."""
+        inds = torch.arange(x.size(0), device=x.device)
+        p1 = inds[::4]
+        p2 = inds[1::4]
+        p3 = inds[2::4]
+        p4 = inds[3::4]
+        ps = [p1, p2, p3, p4]
+        len_arr = [len(p) for p in ps]
+        p12 = len_arr[0] + len_arr[1]
+        p123 = p12 + len_arr[2]
+
+        x_split = [x[:len_arr[0]], x[len_arr[0]:p12], x[p12:p123], x[p123:, :]]
+        x_new = torch.zeros_like(x)
+        for i, p in enumerate(ps):
+            x_new[p] = x_split[i]
+        return x_new
 
     def get_instance(
         self,
+        coords_float,
         scan_id,
         cls_logits,
         mask_logits,
@@ -884,6 +957,7 @@ class ISBNet(nn.Module):
         cls_logits = F.softmax(cls_logits, dim=-1)[:, :-1]
         conf_logits = torch.clamp(conf_logits, 0.0, 1.0)
         cls_scores = torch.sqrt(cls_logits * conf_logits[:, None])
+        # cls_scores = conf_logits[:, None].expand(-1, cls_logits.shape[1])
         mask_preds = mask_logits >= logit_thresh
 
         cls_scores_flatten = cls_scores.reshape(-1)  # n_cls * n_queries
@@ -895,6 +969,7 @@ class ISBNet(nn.Module):
         )
 
         # idx = torch.nonzero(cls_scores_flatten >= score_thresh).view(-1)
+        # _, idx = torch.topk(cls_scores_flatten, k=min(100, len(cls_scores_flatten)), largest=True)
         _, idx = torch.topk(cls_scores_flatten, k=min(300, len(cls_scores_flatten)), largest=True)
         mask_idx = torch.div(idx, self.instance_classes, rounding_mode="floor")
 
@@ -902,6 +977,13 @@ class ISBNet(nn.Module):
         scores_final = cls_scores_flatten[idx]
         masks_final = mask_preds[mask_idx]
         boxes_final = box_preds[mask_idx]
+
+        if False:
+            mask_idx = (conf_logits >= 0.2)
+            cls_final = torch.argmax(cls_scores, dim=1)[mask_idx]
+            scores_final = conf_logits[mask_idx]
+            masks_final = mask_preds[mask_idx]
+            boxes_final = box_preds[mask_idx]
 
         proposals_npoints = torch.sum(masks_final, dim=1)
         npoints_cond = proposals_npoints >= npoint_thresh
@@ -942,6 +1024,16 @@ class ISBNet(nn.Module):
         cls_final = cls_final.cpu().numpy()
         boxes_final = boxes_final.cpu().numpy()
 
+
+        
+
+
+
+        # # FIXME re-merge 4 part
+        # if self.dataset_name == "s3dis":
+        #     masks_final = self.merge_4_parts(masks_final.T).T
+            # print(torch.sum(coords_float_new.float() - coords_float.float()))
+            # masks_final = masks_final_new
         # NOTE rle encode mask to save memory
         rle_masks = rle_encode_gpu_batch(masks_final)
 
