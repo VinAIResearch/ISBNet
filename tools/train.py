@@ -46,6 +46,7 @@ def get_args():
     parser.add_argument("--exp_name", type=str, default="default")
     parser.add_argument("--only_backbone", action="store_true", help="only train backbone")
     parser.add_argument("--trainall", action="store_true", help="only train backbone")
+    parser.add_argument("--n_base", type=int, default=8)
     args = parser.parse_args()
     return args
 
@@ -114,7 +115,8 @@ def validate(epoch, model, optimizer, val_loader, cfg, logger, writer):
     val_set = val_loader.dataset
 
     point_eval = PointWiseEval(num_classes=cfg.model.semantic_classes)
-    scannet_eval = ScanNetEval(val_set.CLASSES, dataset_name=cfg.data.train.type)
+    # scannet_eval = ScanNetEval(val_set.CLASSES, dataset_name=cfg.data.train.type)
+    scannet_eval = ScanNetEval(val_set.CLASS_NAME_BASE, dataset_name=cfg.data.train.type)
 
     torch.cuda.empty_cache()
 
@@ -257,6 +259,7 @@ def main():
     scaler = torch.cuda.amp.GradScaler(enabled=cfg.fp16)
 
     # data
+    
     train_set = build_dataset(cfg.data.train, logger)
     val_set = build_dataset(cfg.data.test, logger)
 

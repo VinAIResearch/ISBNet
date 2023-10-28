@@ -1,8 +1,8 @@
 model:
   channels: 32
   num_blocks: 7
-  semantic_classes: 12
-  instance_classes: 10
+  semantic_classes: 15
+  instance_classes: 13
   sem2ins_classes: []
   semantic_only: False
   semantic_weight: False
@@ -31,7 +31,6 @@ model:
 
 data:
   train:
-    base: &base_ 10
     type: 'scannetv2'
     data_root: 'dataset/scannetv2'
     prefix: 'train'
@@ -44,7 +43,6 @@ data:
       max_npoint: 250000
       min_npoint: 5000
   test:
-    base: *base_
     type: 'scannetv2'
     data_root: 'dataset/scannetv2'
     prefix: 'val'
