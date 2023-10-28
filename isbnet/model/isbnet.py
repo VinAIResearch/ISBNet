@@ -616,7 +616,7 @@ class ISBNet(nn.Module):
 
         ret.update(dict(pred_instances=pred_instances))
 
-        if False:
+        if True:
             # masks = masks_final.cpu().numpy().T
 
             inds = np.arange(coords_float.shape[0])
@@ -665,7 +665,7 @@ class ISBNet(nn.Module):
             # )
 
             # result = [m[fps_ind] for m in result]
-            torch.save({'ins': np.array(result), 'conf': np.array(confidence)}, os.path.join('./results/s3dis_area4_cls_agnostic', scan_id + '.pth'))
+            torch.save({'ins': np.array(result), 'conf': np.array(confidence)}, os.path.join('./results/s3dis_area4_cls_agnostic_pretrainfold4', scan_id + '.pth'))
 
         return ret
 
@@ -960,25 +960,25 @@ class ISBNet(nn.Module):
         # cls_scores = conf_logits[:, None].expand(-1, cls_logits.shape[1])
         mask_preds = mask_logits >= logit_thresh
 
-        cls_scores_flatten = cls_scores.reshape(-1)  # n_cls * n_queries
-        labels = (
-            torch.arange(self.instance_classes, device=cls_scores.device)
-            .unsqueeze(0)
-            .repeat(mask_preds.shape[0], 1)
-            .flatten(0, 1)
-        )
+            # cls_scores_flatten = cls_scores.reshape(-1)  # n_cls * n_queries
+            # labels = (
+            #     torch.arange(self.instance_classes, device=cls_scores.device)
+            #     .unsqueeze(0)
+            #     .repeat(mask_preds.shape[0], 1)
+            #     .flatten(0, 1)
+            # )
 
-        # idx = torch.nonzero(cls_scores_flatten >= score_thresh).view(-1)
-        # _, idx = torch.topk(cls_scores_flatten, k=min(100, len(cls_scores_flatten)), largest=True)
-        _, idx = torch.topk(cls_scores_flatten, k=min(300, len(cls_scores_flatten)), largest=True)
-        mask_idx = torch.div(idx, self.instance_classes, rounding_mode="floor")
+            # # idx = torch.nonzero(cls_scores_flatten >= score_thresh).view(-1)
+            # # _, idx = torch.topk(cls_scores_flatten, k=min(100, len(cls_scores_flatten)), largest=True)
+            # _, idx = torch.topk(cls_scores_flatten, k=min(300, len(cls_scores_flatten)), largest=True)
+            # mask_idx = torch.div(idx, self.instance_classes, rounding_mode="floor")
 
-        cls_final = labels[idx]
-        scores_final = cls_scores_flatten[idx]
-        masks_final = mask_preds[mask_idx]
-        boxes_final = box_preds[mask_idx]
+            # cls_final = labels[idx]
+            # scores_final = cls_scores_flatten[idx]
+            # masks_final = mask_preds[mask_idx]
+            # boxes_final = box_preds[mask_idx]
 
-        if False:
+        if True:
             mask_idx = (conf_logits >= 0.2)
             cls_final = torch.argmax(cls_scores, dim=1)[mask_idx]
             scores_final = conf_logits[mask_idx]
