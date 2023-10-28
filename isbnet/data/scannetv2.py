@@ -92,7 +92,8 @@ class ScanNetDataset(CustomDataset):
             xyz, rgb, semantic_label, instance_label = torch.load(filename)
 
         semantic_label[semantic_label!=-100] = self.CLASS_MAPPER[semantic_label[semantic_label!=-100].astype(np.int64)]
-
+        instance_label[semantic_label == -100] = -100
+        
         spp_filename = osp.join(self.data_root, "superpoints", scan_id + ".pth")
         spp = torch.load(spp_filename)
 

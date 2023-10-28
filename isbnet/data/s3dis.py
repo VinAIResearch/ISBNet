@@ -6,7 +6,31 @@ from glob import glob
 from ..ops import voxelization_idx
 from .custom import CustomDataset
 
+base_class_idx_6 = [0, 1, 2, 3, 4, 8]
+novel_class_idx_6 = [5, 6, 7, 9, 10, 11, 12]
 
+base_class_idx_8 = [ 0, 1, 2, 3, 4, 6, 8, 11 ]
+novel_class_idx_8 = [ 5, 7, 9, 10, 12]
+
+base_class_idx = {
+    8: base_class_idx_8,
+    6: base_class_idx_6,
+}
+
+novel_class_idx = {
+    8: novel_class_idx_8,
+    6: novel_class_idx_6,
+}
+
+
+def build_class_mapper(class_idx, ignore_idx=-100, squeeze_label=True):
+    remapper = np.ones(256, dtype=np.int64) * ignore_idx
+    for (i, x) in enumerate(class_idx):
+        if squeeze_label:
+            remapper[x] = i
+        else:
+            remapper[x] = x
+    return remapper
 class S3DISDataset(CustomDataset):
 
     CLASSES = (
@@ -25,6 +49,17 @@ class S3DISDataset(CustomDataset):
         "clutter",
     )
     BENCHMARK_SEMANTIC_IDXS = [i for i in range(15)]  # NOTE DUMMY values just for save results
+
+    def __init__(self, data_root, prefix, suffix, voxel_cfg=None, training=True, repeat=1, logger=None, base=8):
+        super().__init__(data_root, prefix, suffix, voxel_cfg=voxel_cfg, training=training, repeat=repeat, logger=logger)
+        self.CLASS_MAPPER = build_class_mapper(base_class_idx[base])
+
+        self.CLASS_NAME_BASE = []
+        for cls in base_class_idx[base]:
+            # print(cls, len(ScanNetDataset.CLASSES))
+            self.CLASS_NAME_BASE.append(S3DISDataset.CLASSES[cls])
+
+    
 
     def get_filenames(self):
         if isinstance(self.prefix, str):
@@ -45,6 +80,9 @@ class S3DISDataset(CustomDataset):
 
         spp_filename = osp.join(self.data_root, "superpoints", scan_id + ".pth")
         spp = torch.load(spp_filename)
+
+        semantic_label[semantic_label!=-100] = self.CLASS_MAPPER[semantic_label[semantic_label!=-100].astype(np.int64)]
+        instance_label[semantic_label == -100] = -100
 
         N = xyz.shape[0]
         if self.training:
