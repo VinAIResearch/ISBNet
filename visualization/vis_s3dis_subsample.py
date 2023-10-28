@@ -551,12 +551,28 @@ def get_pred_color(scene_name, mask_valid, dir):
     return inst_label_pred_rgb
 
 def get_pred_color2(scene_name, mask_valid, dir):
+    instance_file = osp.join("/home/tdngo/Workspace/3dis_ws/Open3DInstanceSegmentation/data/s3dis/version1/fuse3d", scene_name + ".pth")
+
+    # instance_file = osp.join("/home/tdngo/Workspace/3dis_ws/Open3DInstanceSegmentation/data/s3dis/version1/mergedsam3d", scene_name + ".pth")
+    # instance_file = osp.join("/home/tdngo/Workspace/3dis_ws/ISBNet/results/s3dis_area4_cls_agnostic", scene_name + ".pth")
     
-    # instance_file = osp.join("/home/tdngo/Workspace/3dis_ws/Open3DInstanceSegmentation/data/s3dis/version1/fuse3d", scene_name + ".pth")
-    instance_file = osp.join("/home/tdngo/Workspace/3dis_ws/ISBNet/results/s3dis_area4_cls_agnostic", scene_name + ".pth")
+    
     data = torch.load(instance_file)
-    masks = data['ins']
-    scores = data['conf']
+    # breakpoint()
+    # masks = torch.from_numpy(data['ins']).long()
+    masks = torch.stack([m for m in data['ins']], dim=0)
+    # if len(masks.shape == 1):
+
+    # mask_torch = masks + 1
+    # mask_torch = torch.nn.functional.one_hot(mask_torch)[:, 2:].permute(1,0)
+    # # breakpoint()
+    # masks = mask_torch.numpy()
+
+    print(masks.shape)
+    try:
+        scores = data['conf']
+    except:
+        scores = np.ones((masks.shape[0]))
     # f = open(instance_file, "r")
     # masks = f.readlines()
     # masks = [mask.rstrip().split() for mask in masks]
@@ -625,7 +641,7 @@ def main():
     parser = argparse.ArgumentParser("S3DIS-Vis")
 
     parser.add_argument("--data_root", type=str, default="dataset/s3dis")
-    parser.add_argument("--scene_name", type=str, default="Area_4_conferenceRoom_2")
+    parser.add_argument("--scene_name", type=str, default="Area_4_office_20")
     parser.add_argument("--split", type=str, default="preprocess_notalign")
     parser.add_argument(
         "--prediction_path", help="path to the prediction results", default="results/s3dis_area5_hardfilter_spp"
@@ -743,7 +759,6 @@ def main():
 
     # print(vis_tasks)
     if "inst_pred" in vis_tasks:
-        print('bug')
         pred_rgb = get_pred_color2(args.scene_name, mask_valid, args.prediction_path)
         v.add_points(f"inst_pred", xyz, pred_rgb, point_size=args.point_size)
 
