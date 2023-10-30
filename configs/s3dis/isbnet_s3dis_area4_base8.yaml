@@ -1,0 +1,88 @@
+model:
+  channels: 32
+  num_blocks: 7
+  semantic_classes: 10
+  instance_classes: 8
+  sem2ins_classes: [0,1]
+  semantic_only: False
+  semantic_weight: False
+  with_coords: True
+  ignore_label: -100
+  voxel_scale: 50
+  use_spp_pool: True
+  filter_bg_thresh: 0.4
+  iterative_sampling: True
+  instance_head_cfg:
+    num_dyco_layer: 3
+    dec_dim: 128
+    n_sample_pa1: 2048
+    n_queries: 256
+    radius_scale: 1
+    radius: 0.4
+    neighbor: 32
+  test_cfg:
+    x4_split: True
+    logit_thresh: 0.0
+    score_thresh: 0.5
+    npoint_thresh: 400
+    type_nms: 'standard'
+    topk: -1
+    nms_threshold: 0.2
+
+  fixed_modules: ['input_conv', 'unet', 'output_layer', 'semantic_linear', 'offset_linear', 'offset_vertices_linear', 'box_conf_linear']
+
+data:
+  train:
+    base: &base_ 8
+    type: 's3dis'
+    data_root: 'dataset/s3dis/'
+    prefix: ['Area_1', 'Area_2', 'Area_3', 'Area_5', 'Area_6']
+    suffix: '_inst_nostuff.pth'
+    repeat: 20
+    training: True
+    voxel_cfg:
+      scale: 50
+      spatial_shape: [128, 512]
+      max_npoint: 250000
+      min_npoint: 5000
+  test:
+    base: *base_
+    type: 's3dis'
+    data_root: 'dataset/s3dis/'
+    prefix: 'Area_4'
+    suffix: '_inst_nostuff.pth'
+    training: False
+    voxel_cfg:
+      scale: 50
+      spatial_shape: [128, 512]
+      max_npoint: 250000
+      min_npoint: 5000
+
+
+dataloader:
+  train:
+    batch_size: 12
+    num_workers: 12
+  test:
+    batch_size: 1
+    num_workers: 1
+
+optimizer:
+  type: 'AdamW'
+  lr: 0.001
+  weight_decay: 0.0001
+
+save_cfg:
+  semantic: False
+  offset: False
+  instance: True
+  offset_vertices: False
+  nmc_clusters: False
+  object_conditions: False
+
+fp16: False
+epochs: 90
+step_epoch: 40
+save_freq: 4
+pretrain: 'work_dirs/s3dis/isbnet_backbone_s3dis_area4_base8/pretrain_area4_base8/best.pth'
+work_dir: ''
