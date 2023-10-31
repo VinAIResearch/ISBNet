@@ -5,7 +5,7 @@ import argparse
 import os.path as osp
 import pyviz3d.visualizer as viz
 
-
+import pickle
 COLOR_DETECTRON2 = (
     np.array(
         [
@@ -915,7 +915,7 @@ CLASS_LABELS_PANOPTIC = ("wall", "floor")
 
 def get_pred_color(scene_name, mask_valid, dir):
     instance_file = osp.join("/home/tdngo/Workspace/3dis_ws/OVIR-3D/results/saved_masks_ovir_groundedsam/scene0011_00.pth")
-
+    instance_file = "/home/tdngo/Workspace/3dis_ws/OVIR-3D/results/saved_masks_ovir_sam_fusion/scene0300_00.pth"
     # instance_file = osp.join("/home/tdngo/Workspace/3dis_ws/Open3DInstanceSegmentation/data/s3dis/version1/mergedsam3d", scene_name + ".pth")
     # instance_file = osp.join("/home/tdngo/Workspace/3dis_ws/ISBNet/results/s3dis_area4_cls_agnostic", scene_name + ".pth")
     
@@ -975,11 +975,84 @@ def get_pred_color(scene_name, mask_valid, dir):
     return inst_label_pred_rgb
 
 
+def get_pred_color_fusion(scene_name, mask_valid, dir):
+    instance_file = osp.join("/home/tdngo/Workspace/3dis_ws/OVIR-3D/results/saved_masks_ovir_groundedsam/scene0011_00.pth")
+    instance_file = "/home/tdngo/Workspace/3dis_ws/OVIR-3D/results/saved_masks_ovir_sam_fusion/scene0300_00.pth"
+    instance_file = '/home/tdngo/Workspace/3dis_ws/OVIR-3D/data/ScannetV2_sam_fusion/detic_output/imagenet21k-0.3/scene0300_00/predictions/proposed_fusion_sam_iou-0.25_recall-0.50_feature-0.75_interval-300.pkl'
+    # instance_file = osp.join("/home/tdngo/Workspace/3dis_ws/Open3DInstanceSegmentation/data/s3dis/version1/mergedsam3d", scene_name + ".pth")
+    # instance_file = osp.join("/home/tdngo/Workspace/3dis_ws/ISBNet/results/s3dis_area4_cls_agnostic", scene_name + ".pth")
+    
+
+    with open(instance_file, 'rb') as fp:
+        scene_graph = pickle.load(fp)
+
+    node_ids = list(scene_graph.nodes)
+
+    instances = torch.zeros((len(node_ids), mask_valid.shape[0]), dtype=torch.bool)
+    print('len', len(node_ids))
+    # node_ids.sort(key=lambda x: len(scene_graph.nodes[x]['pt_indices']), reverse=True)
+    for i, node_id in enumerate(node_ids):
+        node = scene_graph.nodes[node_id]
+        pt_indices = node['pt_indices']
+        instances[i, pt_indices] = 1
+
+    
+    # data = torch.load(instance_file)
+    # # breakpoint()
+    # masks = data['ins'].cpu()
+    # masks = torch.stack([m for m in data['ins']], dim=0)
+    # if len(masks.shape == 1):
+
+    # mask_torch = masks + 1
+    # mask_torch = torch.nn.functional.one_hot(mask_torch)[:, 2:].permute(1,0)
+    # # breakpoint()
+    # masks = mask_torch.numpy()
+    scores = np.ones((len(node_ids)))
+    # f = open(instance_file, "r")
+    # masks = f.readlines()
+    # masks = [mask.rstrip().split() for mask in masks]
+    inst_label_pred_rgb = np.zeros((mask_valid.sum(), 3))  # np.ones(rgb.shape) * 255 #
+
+    # breakpoint()
+    # FIXME
+    ins_num = len(node_ids)
+    ins_pointnum = np.zeros(ins_num)
+    inst_label = -100 * np.ones(mask_valid.sum()).astype(np.int)
+
+    # sort score such that high score has high priority for visualization
+    # scores = np.array([float(x[-1]) for x in masks])
+    sort_inds = np.argsort(ins_pointnum)[::-1]
+    for i_ in range(len(node_ids) - 1, -1, -1):
+        i = sort_inds[i_]
+        # mask_path = os.path.join(opt.prediction_path, "pred_instance", masks[i][0])
+        # mask_path = osp.join(dir, "pred_instance", masks[i][0])
+        # assert osp.isfile(mask_path), mask_path
+        # if float(masks[i][2]) < 0.1:
+        #     continue
+
+        # mask = np.loadtxt(mask_path).astype(np.int)
+        mask = instances[i]
+        # mask = mask[mask_valid]
+
+        # cls = SEMANTIC_IDX2NAME[int(masks[i][1]) - 1]
+
+        # print("{} {}: {} pointnum: {}".format(i, masks[i], cls, mask.sum()))
+        ins_pointnum[i] = mask.sum()
+        inst_label[mask == 1] = i
+
+    sort_idx = np.argsort(ins_pointnum)[::-1]
+    for _sort_id in range(ins_num):
+        color = COLOR_DETECTRON2[_sort_id % len(COLOR_DETECTRON2)]
+        inst_label_pred_rgb[inst_label == sort_idx[_sort_id]] = color
+
+    return inst_label_pred_rgb
+
+
 def main():
     parser = argparse.ArgumentParser("ScanNet200-Vis")
 
     parser.add_argument("--data_root", type=str, default="dataset/scannet200")
-    parser.add_argument("--scene_name", type=str, default="scene0011_00")
+    parser.add_argument("--scene_name", type=str, default="scene0300_00")
     parser.add_argument("--split", type=str, default="val")
     parser.add_argument(
         "--prediction_path", help="path to the prediction results", default="./results/isbnet_scannet200_val"
@@ -1010,7 +1083,8 @@ def main():
 
     rgb = (rgb + 1.0) * 127.5
 
-    mask_valid = semantic_label != -100
+    # mask_valid = semantic_label != -100
+    mask_valid = np.ones_like(semantic_label).astype(bool)
     xyz = xyz[mask_valid]
     rgb = rgb[mask_valid]
     semantic_label = semantic_label[mask_valid]
@@ -1053,7 +1127,10 @@ def main():
         v.add_points(f"superpoint", xyz, superpoint_rgb, point_size=args.point_size)
 
     if "inst_pred" in vis_tasks:
-        pred_rgb = get_pred_color(args.scene_name, mask_valid, args.prediction_path)
+        # pred_rgb = get_pred_color(args.scene_name, mask_valid, args.prediction_path)
+        pred_rgb = get_pred_color_fusion(args.scene_name, mask_valid, args.prediction_path)
+
+        
         v.add_points(f"inst_pred", xyz, pred_rgb, point_size=args.point_size)
 
     v.save("visualization/pyviz3d")
