@@ -619,17 +619,17 @@ class ISBNet(nn.Module):
         if True:
             # masks = masks_final.cpu().numpy().T
 
-            inds = np.arange(coords_float.shape[0])
+                # inds = np.arange(coords_float.shape[0])
 
-            p1 = inds[::4]
-            p2 = inds[1::4]
-            p3 = inds[2::4]
-            p4 = inds[3::4]
-            ps = [p1, p2, p3, p4]
-            # breakpoint()
-            len_arr = [len(p) for p in ps]
-            p12 = len_arr[0] + len_arr[1]
-            p123 = p12 + len_arr[2]
+                # p1 = inds[::4]
+                # p2 = inds[1::4]
+                # p3 = inds[2::4]
+                # p4 = inds[3::4]
+                # ps = [p1, p2, p3, p4]
+                # # breakpoint()
+                # len_arr = [len(p) for p in ps]
+                # p12 = len_arr[0] + len_arr[1]
+                # p123 = p12 + len_arr[2]
 
             
 
@@ -649,12 +649,12 @@ class ISBNet(nn.Module):
                 conf = ret['pred_instances'][ind]['conf']
                 mask = np.array(rle_decode(ret['pred_instances'][ind]['pred_mask']))
 
-                masks_split = [mask[:len_arr[0]], mask[len_arr[0]:p12], mask[p12:p123], mask[p123:]]
+                # masks_split = [mask[:len_arr[0]], mask[len_arr[0]:p12], mask[p12:p123], mask[p123:]]
 
-                mask3 = np.zeros_like(mask)
-                for i, p in enumerate(ps):
-                    mask3[p] = masks_split[i]
-                mask = mask3
+                # mask3 = np.zeros_like(mask)
+                # for i, p in enumerate(ps):
+                #     mask3[p] = masks_split[i]
+                # mask = mask3
 
                 confidence.append(conf)
                 result.append(mask)
@@ -665,7 +665,7 @@ class ISBNet(nn.Module):
             # )
 
             # result = [m[fps_ind] for m in result]
-            torch.save({'ins': np.array(result), 'conf': np.array(confidence)}, os.path.join('./results/s3dis_area4_cls_agnostic_pretrainfold4', scan_id + '.pth'))
+            torch.save({'ins': np.array(result), 'conf': np.array(confidence)}, os.path.join('./results/isbnet_clsagnostic_scannet200', scan_id + '.pth'))
 
         return ret
 
