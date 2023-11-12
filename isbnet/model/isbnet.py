@@ -611,7 +611,8 @@ class ISBNet(nn.Module):
             spps,
             logit_thresh=self.test_cfg.logit_thresh,
             score_thresh=self.test_cfg.score_thresh,
-            npoint_thresh=self.test_cfg.npoint_thresh,
+            # npoint_thresh=self.test_cfg.npoint_thresh,
+            npoint_thresh=50,
         )
 
         ret.update(dict(pred_instances=pred_instances))
@@ -665,7 +666,7 @@ class ISBNet(nn.Module):
             # )
 
             # result = [m[fps_ind] for m in result]
-            torch.save({'ins': np.array(result), 'conf': np.array(confidence)}, os.path.join('./results/isbnet_clsagnostic_scannet200', scan_id + '.pth'))
+            torch.save({'ins': np.array(result), 'conf': np.array(confidence)}, os.path.join('./results/isbnet_clsagnostic_scannet200_pretrain20', scan_id + '.pth'))
 
         return ret
 
@@ -979,7 +980,7 @@ class ISBNet(nn.Module):
             # boxes_final = box_preds[mask_idx]
 
         if True:
-            mask_idx = (conf_logits >= 0.2)
+            mask_idx = (conf_logits >= 0.1)
             cls_final = torch.argmax(cls_scores, dim=1)[mask_idx]
             scores_final = conf_logits[mask_idx]
             masks_final = mask_preds[mask_idx]

@@ -99,9 +99,10 @@ def rle_decode(rle):
     """
     length = rle['length']
     counts = rle['counts']
-    # print(counts)
-    # s = counts.split()
-    s = counts
+    try:
+        s = counts.split()
+    except:
+        s = counts
     starts, nums = [np.asarray(x, dtype=np.int32) for x in (s[0:][::2], s[1:][::2])]
     starts -= 1
     ends = starts + nums

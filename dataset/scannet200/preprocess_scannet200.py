@@ -43,15 +43,16 @@ REVERSE_NORMALIZED_CKASS_IDS_200_np = np.array(REVERSE_NORMALIZED_CKASS_IDS_200)
 np.save("reverse_norm_ids.npy", REVERSE_NORMALIZED_CKASS_IDS_200_np)
 
 # SAVED_DIR =
-
+dataset_root = "/media/tdngo/T7/Datasets/scannetv2/raws"
 
 def handle_process(scene_path, output_path, labels_pd, train_scenes, val_scenes):
 
-    scene_id = scene_path.split("/")[-1]
-    mesh_path = os.path.join(scene_path, f"{scene_id}{CLOUD_FILE_PFIX}.ply")
-    segments_file = os.path.join(scene_path, f"{scene_id}{CLOUD_FILE_PFIX}{SEGMENTS_FILE_PFIX}")
-    aggregations_file = os.path.join(scene_path, f"{scene_id}{AGGREGATIONS_FILE_PFIX}")
-    info_file = os.path.join(scene_path, f"{scene_id}.txt")
+    scene_id = os.path.basename(scene_path)[:12]
+    
+    mesh_path = os.path.join(dataset_root, f"{scene_id}{CLOUD_FILE_PFIX}.ply")
+    segments_file = os.path.join(dataset_root, f"{scene_id}{CLOUD_FILE_PFIX}{SEGMENTS_FILE_PFIX}")
+    aggregations_file = os.path.join(dataset_root, f"{scene_id}{AGGREGATIONS_FILE_PFIX}")
+    info_file = os.path.join(dataset_root, f"{scene_id}.txt")
 
     if scene_id in train_scenes:
         output_file = os.path.join(output_path, "train", f"{scene_id}_inst_nostuff.pth")
@@ -150,7 +151,7 @@ if __name__ == "__main__":
         os.makedirs(val_output_dir)
 
     # Load scene paths
-    scene_paths = sorted(glob.glob(config.dataset_root + "/*"))
+    scene_paths = sorted(glob.glob(config.dataset_root + "/*_vh_clean_2.labels.ply"))
 
     # Preprocess data.
     pool = ProcessPoolExecutor(max_workers=config.num_workers)
