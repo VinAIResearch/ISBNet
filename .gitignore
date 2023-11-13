@@ -92,6 +92,9 @@ dataset/stpls3d/train
 dataset/stpls3d/val
 dataset/stpls3d/Synthetic_v3_InstanceSegmentation
 
+dataset/replica/
+dataset/replica
+
 dataset/semantic_kitti/sequences
 
 work_dirs/
