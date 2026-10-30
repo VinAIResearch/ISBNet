@@ -10,7 +10,7 @@ Pretrain the 3D Unet backbone from scratch
 python3 tools/train.py configs/scannetv2/isbnet_backbone_scannetv2.yaml --only_backbone --exp_name pretrain_backbone
 ```
 
-We also provided the pre-trained 3D backbone models of [ScanNetV2 val](https://drive.google.com/file/d/1DQiMOsZpr9PgaKx9aK8rJhhIvh0vodWd/view?usp=sharing), [ScanNetV2-200 val](https://drive.google.com/file/d/10Izd3KFFcBALuANBKbiXbSofVua4BirS/view?usp=share_link), [S3DIS val Area 5](https://drive.google.com/file/d/1SHqrtrb94HQMa4Ml6X6_4JHZbRDqlTEv/view?usp=sharing), and [STPLS3D val](https://drive.google.com/file/d/1DVKyl2PE73DhhRoy5VQkjaE1g43ihj50/view?usp=share_link). Alternatively, we can also finetune other pre-trained backbones from [SoftGroup](https://github.com/thangvubk/SoftGroup) or [SSTNet](https://github.com/Gorilla-Lab-SCUT/SSTNet) with fewer epoches by set the pretrain path in the config file to the corresponding pre-trained weights.
+We also provided the pre-trained 3D backbone models of [ScanNetV2 val](https://huggingface.co/TuanNgo/ISBNet/resolve/main/scannetv2/pretrain_scannetv2_val.pth), [ScanNetV2-200 val](https://huggingface.co/TuanNgo/ISBNet/resolve/main/scannet200/pretrain_scannetv2_200_val.pth), [S3DIS val Area 5](https://huggingface.co/TuanNgo/ISBNet/resolve/main/s3dis/pretrain_s3dis_area5.pth), and [STPLS3D val](https://huggingface.co/TuanNgo/ISBNet/resolve/main/stpls3d/pretrain_stpls3d_val.pth). Alternatively, we can also finetune other pre-trained backbones from [SoftGroup](https://github.com/thangvubk/SoftGroup) or [SSTNet](https://github.com/Gorilla-Lab-SCUT/SSTNet) with fewer epoches by set the pretrain path in the config file to the corresponding pre-trained weights.
 
 Train our ISBNet
 

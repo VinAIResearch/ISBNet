@@ -74,14 +74,14 @@ Please refer to [training guide](docs/TRAIN.md).
 |:-:|:-:|:-:|:-:|:-:|
 | ScanNet test | 55.9 | 76.3 | 
 | ScanNet val (paper) | 54.5 | 73.1 |
-| ScanNet val | 56.8 | 73.3 | [config](configs/scannetv2/isbnet_scannetv2.yaml) | [checkpoint](https://drive.google.com/file/d/1vIO6rQOy1QVHaWF8ie4E3q0tQbwiY0Kb/view?usp=sharing) 
-| ScanNet val (lightweight) | 50.1 | 68.9 | [config](configs/scannetv2/isbnet_lightweight_scannetv2.yaml) | [checkpoint](https://drive.google.com/file/d/1MOp2dq1KrJiTQxeLSbvTZX60CiUvAqcK/view?usp=share_link) 
+| ScanNet val | 56.8 | 73.3 | [config](configs/scannetv2/isbnet_scannetv2.yaml) | [checkpoint](https://huggingface.co/TuanNgo/ISBNet/resolve/main/scannetv2/head_scannetv2_val.pth) 
+| ScanNet val (lightweight) | 50.1 | 68.9 | [config](configs/scannetv2/isbnet_lightweight_scannetv2.yaml) | [checkpoint](https://huggingface.co/TuanNgo/ISBNet/resolve/main/scannetv2/head_small_scannetv2_val.pth) 
 
 ### [ScanNetv2-200](https://kaldir.vc.in.tum.de/scannet_benchmark/scannet200_semantic_instance_3d)
 
 | Dataset | AP | AP_50 | Config | Checkpoint
 |:-:|:-:|:-:|:-:|:-:|
-| ScanNet200 val | 24.5 | 32.7 | [config](configs/scannet200/isbnet_scannet200.yaml) | [checkpoint](https://drive.google.com/file/d/1ZEZgQeT6dIakljSTx4s5YZM0n2rwC3Kw/view?usp=share_link) 
+| ScanNet200 val | 24.5 | 32.7 | [config](configs/scannet200/isbnet_scannet200.yaml) | [checkpoint](https://huggingface.co/TuanNgo/ISBNet/resolve/main/scannet200/head_scannetv2_200_val.pth) 
 
 
 ### [S3DIS](http://buildingparser.stanford.edu/dataset.html)
@@ -94,8 +94,14 @@ Please refer to [training guide](docs/TRAIN.md).
 
 | Dataset | AP | AP_50 | Config | Checkpoint
 |:-:|:-:|:-:|:-:|:-:|
-| STPLS3D val | 51.2 | 66.7 | [config](configs/stpls3d/isbnet_stpls3d.yaml) | [checkpoint](https://drive.google.com/file/d/1Y02qyblW5UhzOnAc5YZIjjNRvtXXwc_M/view?usp=sharing) 
+| STPLS3D val | 51.2 | 66.7 | [config](configs/stpls3d/isbnet_stpls3d.yaml) | [checkpoint](https://huggingface.co/TuanNgo/ISBNet/resolve/main/stpls3d/head_stpls3d_val.pth) 
 
+
+All pre-trained weights are hosted on [Hugging Face](https://huggingface.co/TuanNgo/ISBNet). Download them into `pretrains/` (matching the default `pretrain` paths in the configs):
+
+```
+hf download TuanNgo/ISBNet --local-dir pretrains
+```
 
 Run evaluation with pre-trained models:
 
